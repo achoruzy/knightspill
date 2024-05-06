@@ -23,7 +23,9 @@ void AWeapon::Tick(float DeltaTime)
 
 void AWeapon::Attach_Implementation(AMainCharacter* Character)
 {
-	const auto Rules = FAttachmentTransformRules::SnapToTargetIncludingScale; 
-	AttachToActor(Character, Rules, "RHandSocket");
+}
+
+void AWeapon::Collect_Implementation(AMainCharacter* Character)
+{
 }
 

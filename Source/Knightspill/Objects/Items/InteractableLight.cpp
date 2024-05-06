@@ -16,10 +16,10 @@ void AInteractableLight::BeginPlay()
 
 void AInteractableLight::OnInteract()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Siema mordo cztery"))
+	UE_LOG(LogTemp, Warning, TEXT("Test"))
 }
 
-void AInteractableLight::Interact_Implementation()
+void AInteractableLight::Interact_Implementation(AMainCharacter* Character)
 {
 	OnInteract();
 }

@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Knightspill/Objects/Items/Item.h"
 #include "Knightspill/Systems/Interfaces/Attachable.h"
+#include "Knightspill/Systems/Interfaces/Collectible.h"
 
 #include "Weapon.generated.h"
 
 UCLASS()
-class KNIGHTSPILL_API AWeapon : public AActor, public IAttachable
+class KNIGHTSPILL_API AWeapon : public AItem, public IAttachable, public ICollectible
 {
 	GENERATED_BODY()
 
@@ -19,6 +21,7 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	virtual void Attach_Implementation(AMainCharacter* Character) override;
+	virtual void Collect_Implementation(AMainCharacter* Character) override;
 	
 protected:
 	virtual void BeginPlay() override;

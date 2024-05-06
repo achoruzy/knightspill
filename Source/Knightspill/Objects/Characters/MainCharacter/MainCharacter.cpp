@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (C) Data Verft Arkadiusz Choruzy
 
 
 #include "MainCharacter.h"
@@ -8,11 +8,14 @@
 #include "Knightspill/Game/Input/InputInterfaceGeneral.h"
 #include "InputMappingContext.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Knightspill/Systems/Interfaces/Collectible.h"
+#include "Knightspill/Systems/Interfaces/Interactable.h"
+#include "Knightspill/Objects/Items/Item.h"
+#include "Knightspill/Objects/Items/Equipment/Weapons/Weapon.h"
 
-// Sets default values
 AMainCharacter::AMainCharacter()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
@@ -42,6 +45,16 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	FHitResult Hit;
+	FVector TraceStart = GetActorLocation();
+	FVector TraceEnd = GetActorLocation() + Camera->GetForwardVector() * 1500.f;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+	if (Hit.bBlockingHit && IsValid(Hit.GetActor())) LookAtActor = Hit.GetActor();
+	else LookAtActor = nullptr;
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, -1, 0, 1);
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -60,13 +73,14 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	
 	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 	/* Input bindings here*/
-	Input->BindAction(InputInterface->MoveForward, ETriggerEvent::Triggered, this, &AMainCharacter::MoveForward);
-	Input->BindAction(InputInterface->MoveSide, ETriggerEvent::Triggered, this, &AMainCharacter::MoveSide);
-	Input->BindAction(InputInterface->Look, ETriggerEvent::Triggered, this, &AMainCharacter::Look);
-	Input->BindAction(InputInterface->Jump, ETriggerEvent::Triggered, this, &AMainCharacter::JumpAction);
+	Input->BindAction(InputInterface->MoveForward, ETriggerEvent::Triggered, this, &AMainCharacter::OnMoveForward);
+	Input->BindAction(InputInterface->MoveSide, ETriggerEvent::Triggered, this, &AMainCharacter::OnMoveSide);
+	Input->BindAction(InputInterface->Look, ETriggerEvent::Triggered, this, &AMainCharacter::OnLook);
+	Input->BindAction(InputInterface->Jump, ETriggerEvent::Triggered, this, &AMainCharacter::OnJump);
+	Input->BindAction(InputInterface->Interact, ETriggerEvent::Triggered, this, &AMainCharacter::OnInteract);
 }
 
-void AMainCharacter::MoveForward(const FInputActionValue& Value)
+void AMainCharacter::OnMoveForward(const FInputActionValue& Value)
 {
 	if (const float Val = Value.Get<float>(); Val != 0.0)
 	{
@@ -76,7 +90,7 @@ void AMainCharacter::MoveForward(const FInputActionValue& Value)
 	}
 }
 
-void AMainCharacter::MoveSide(const FInputActionValue& Value)
+void AMainCharacter::OnMoveSide(const FInputActionValue& Value)
 {
 	if (const float Val = Value.Get<float>(); Val != 0.0)
 	{
@@ -86,7 +100,7 @@ void AMainCharacter::MoveSide(const FInputActionValue& Value)
 	}
 }
 
-void AMainCharacter::Look(const FInputActionValue& Value)
+void AMainCharacter::OnLook(const FInputActionValue& Value)
 {
 	if (const FVector2D Val = Value.Get<FVector2D>(); !Val.IsZero())
 	{
@@ -95,7 +109,45 @@ void AMainCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void AMainCharacter::JumpAction(const FInputActionValue& Value)
+void AMainCharacter::OnJump(const FInputActionValue& Value)
 {
 	Jump();
+}
+
+void AMainCharacter::OnInteract(const FInputActionValue& Value)
+{
+	if (LookAtActor)
+	{
+		if (LookAtActor->GetClass()->ImplementsInterface(UCollectible::StaticClass()))
+		{
+			if (auto collectible = Cast<ICollectible>(LookAtActor))
+			{
+				collectible->Collect_Implementation(this);
+			}
+		}
+		else if (LookAtActor->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
+		{
+			if (auto interactable = Cast<IInteractable>(LookAtActor))
+			{
+				interactable->Interact_Implementation(this);
+			}
+		}
+	}
+}
+
+bool AMainCharacter::IsWeaponEquipped() const
+{
+	if (RHandEquipped) return true;
+	return false;
+}
+
+void AMainCharacter::AttachWeapon(AWeapon* Weapon)
+{
+	const auto Rules = FAttachmentTransformRules::SnapToTargetIncludingScale;
+	if (!IsWeaponEquipped()) Weapon->AttachToActor(this, Rules, "RHandSocket");
+}
+
+void AMainCharacter::CollectItem(AItem* Item)
+{
+	CollectedItems.Add(Item);
 }

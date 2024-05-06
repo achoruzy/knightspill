@@ -15,7 +15,7 @@ class AInteractableLight : public AActor, public IInteractable
 public:
 	AInteractableLight();
 	virtual void Tick(float DeltaTime) override;
-	virtual void Interact_Implementation() override;
+	virtual void Interact_Implementation(AMainCharacter* Character) override;
 
 protected:
 	virtual void BeginPlay() override;

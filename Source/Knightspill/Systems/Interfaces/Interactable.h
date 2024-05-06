@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Knightspill/Objects/Characters/MainCharacter/MainCharacter.h"
 #include "UObject/Interface.h"
 #include "Interactable.generated.h"
 
@@ -22,6 +23,6 @@ class KNIGHTSPILL_API IInteractable
 
 public:
 	UFUNCTION(BlueprintNativeEvent)
-	void Interact();
-	virtual void Interact_Implementation() = 0;
+	void Interact(AMainCharacter* Character);
+	virtual void Interact_Implementation(AMainCharacter* Character) = 0;
 };

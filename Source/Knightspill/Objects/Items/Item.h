@@ -6,6 +6,8 @@
 
 #include "Item.generated.h"
 
+
+/// @brief Item class is a base class for all collectible items of any kind
 UCLASS()
 class KNIGHTSPILL_API AItem : public AActor
 {

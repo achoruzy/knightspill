@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Knightspill/Objects/Characters/MainCharacter/MainCharacter.h"
 #include "UObject/Interface.h"
 #include "Collectible.generated.h"
 

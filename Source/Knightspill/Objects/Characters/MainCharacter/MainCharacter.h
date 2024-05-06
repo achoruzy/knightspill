@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (C) Data Verft Arkadiusz Choruzy.
 
 #pragma once
 
@@ -9,6 +9,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "MainCharacter.generated.h"
 
+class AItem;
+class AWeapon;
 class UInputInterfaceGeneral;
 struct FInputActionValue;
 class UInputMappingContext;
@@ -37,8 +39,18 @@ private:
 	UPROPERTY(EditAnywhere, Category="Input", meta = (DisplayPriority = 0))
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
 
-	void MoveForward(const FInputActionValue& Value);
-	void MoveSide(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
-	void JumpAction(const FInputActionValue& Value);
+	AWeapon* RHandEquipped;
+	AActor* LookAtActor;
+	TArray<AItem*> CollectedItems;
+
+	void OnMoveForward(const FInputActionValue& Value);
+	void OnMoveSide(const FInputActionValue& Value);
+	void OnLook(const FInputActionValue& Value);
+	void OnJump(const FInputActionValue& Value);
+	void OnInteract(const FInputActionValue& Value);
+
+public:
+	bool IsWeaponEquipped() const;
+	void AttachWeapon(AWeapon* Weapon);
+	void CollectItem(AItem* Item);
 };
