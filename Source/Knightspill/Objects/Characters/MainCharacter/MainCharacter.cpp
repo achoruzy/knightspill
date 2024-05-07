@@ -46,11 +46,13 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Trace line for looking at actor
 	FHitResult Hit;
 	FVector TraceStart = GetActorLocation();
 	FVector TraceEnd = GetActorLocation() + Camera->GetForwardVector() * 1500.f;
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this);
+	QueryParams.MobilityType = EQueryMobilityType::Static;
 	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
 	if (Hit.bBlockingHit && IsValid(Hit.GetActor())) LookAtActor = Hit.GetActor();
 	else LookAtActor = nullptr;
@@ -118,6 +120,7 @@ void AMainCharacter::OnInteract(const FInputActionValue& Value)
 {
 	if (LookAtActor)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Name: %s"), *LookAtActor->GetName());
 		if (LookAtActor->GetClass()->ImplementsInterface(UCollectible::StaticClass()))
 		{
 			if (auto collectible = Cast<ICollectible>(LookAtActor))
@@ -144,7 +147,7 @@ bool AMainCharacter::IsWeaponEquipped() const
 void AMainCharacter::AttachWeapon(AWeapon* Weapon)
 {
 	const auto Rules = FAttachmentTransformRules::SnapToTargetIncludingScale;
-	if (!IsWeaponEquipped()) Weapon->AttachToActor(this, Rules, "RHandSocket");
+	if (!IsWeaponEquipped()) Weapon->AttachToComponent(GetMesh(), Rules, "RHandSocket");
 }
 
 void AMainCharacter::CollectItem(AItem* Item)
