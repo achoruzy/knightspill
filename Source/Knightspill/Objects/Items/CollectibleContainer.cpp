@@ -36,6 +36,7 @@ void ACollectibleContainer::BeginPlay()
 			if (Mesh->GetStaticMesh())
 			{
 				Item->SetActorHiddenInGame(true);
+				bHasOwnMesh = true;
 			}
 			else
 			{
@@ -45,6 +46,7 @@ void ACollectibleContainer::BeginPlay()
 				{
 					Mesh->SetStaticMesh(itemMeshComp->GetStaticMesh());
 					Mesh->AttachToComponent(Collider, FAttachmentTransformRules::SnapToTargetIncludingScale);
+					bHasOwnMesh = false;
 				}
 			}
 		}
@@ -68,14 +70,14 @@ void ACollectibleContainer::Collect_Implementation(AMainCharacter* Character)
 			UE_LOG(LogTemp, Warning, TEXT("Collecting %s"), *Item->GetName());
 			if (auto attachable = Cast<AWeapon>(Item))
 			{
-				if (!HasOwnMesh)
+				if (!bHasOwnMesh)
 				{
 					Mesh->SetStaticMesh(nullptr);
 				}
 				attachable->SetActorHiddenInGame(false);
 				Character->AttachWeapon(attachable);
 				Character->CollectItem(Item);
-				Destroy();
+				Destroy(); // as the item was taken and nothing left
 			}
 		}
 		else if (Item->GetClass()->ImplementsInterface(UCollectible::StaticClass()))
@@ -83,6 +85,7 @@ void ACollectibleContainer::Collect_Implementation(AMainCharacter* Character)
 			if (auto collectable = Cast<AItem>(Item))
 			{
 				Character->CollectItem(collectable);
+				// destroy not needed as prop stays on level
 			}
 		}	
 	}

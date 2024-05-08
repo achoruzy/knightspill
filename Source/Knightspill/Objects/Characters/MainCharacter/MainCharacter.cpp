@@ -25,14 +25,14 @@ AMainCharacter::AMainCharacter()
 	SpringArm->SetupAttachment(GetRootComponent());
 	SpringArm->bUsePawnControlRotation = true;
 	SpringArm->bInheritYaw = true;
-	SpringArm->bInheritPitch = false;
+	SpringArm->bInheritPitch = true;
 	SpringArm->bInheritRoll = false;
 	
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("TPPCamera"));
 	Camera->SetupAttachment(SpringArm);
 
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
-	MovementComponent->bOrientRotationToMovement = true;
+	MovementComponent->bOrientRotationToMovement = false;
 	MovementComponent->bUseControllerDesiredRotation = true;
 }
 

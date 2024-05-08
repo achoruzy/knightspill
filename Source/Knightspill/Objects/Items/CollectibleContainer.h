@@ -14,16 +14,22 @@ class KNIGHTSPILL_API ACollectibleContainer : public AActor, public ICollectible
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
+	bool bHasOwnMesh;
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsEmpty;
+	// TODO: BP editable offset and rotation for mesh to add here
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	USphereComponent* Collider;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* Mesh;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AItem> ItemClass;
 	AItem* Item;
-	UPROPERTY(EditAnywhere)
-	bool HasOwnMesh;
-
+	
+public:
 	ACollectibleContainer();
 	virtual void Tick(float DeltaTime) override;
 	virtual void Collect_Implementation(AMainCharacter* Character) override;
@@ -36,4 +42,10 @@ private:
 	void OnColliderBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnColliderEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+// EVENTS
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FItemCollected);
+	UPROPERTY(BlueprintAssignable)
+	FItemCollected ItemCollected;
 };

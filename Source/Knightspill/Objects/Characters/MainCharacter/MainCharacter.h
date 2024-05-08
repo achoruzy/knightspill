@@ -21,39 +21,41 @@ class KNIGHTSPILL_API AMainCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	AMainCharacter();
-	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-
-protected:
-	virtual void BeginPlay() override;
+	bool bIsLookingFor;
 
 private:
-	UPROPERTY(EditAnywhere)
+	AActor* LookAtActor;
+	AWeapon* RHandEquipped;
+	TArray<AItem*> CollectedItems;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* SpringArm;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* Camera;
 	
 	UPROPERTY(EditAnywhere, Category="Input", meta = (DisplayPriority = 0))
 	UInputInterfaceGeneral* InputInterface;
 	UPROPERTY(EditAnywhere, Category="Input", meta = (DisplayPriority = 0))
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
-
-	AActor* LookAtActor;
-	bool bIsLookingFor;
 	
-	AWeapon* RHandEquipped;
-	TArray<AItem*> CollectedItems;
+public:
+	AMainCharacter();
+	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintPure)
+	bool IsWeaponEquipped() const;
+	void AttachWeapon(AWeapon* Weapon);
+	void CollectItem(AItem* Item);
+	void SetCanLookFor(bool var);
+	
+protected:
+	virtual void BeginPlay() override;
+
+private:
 	void OnMoveForward(const FInputActionValue& Value);
 	void OnMoveSide(const FInputActionValue& Value);
 	void OnLook(const FInputActionValue& Value);
 	void OnJump(const FInputActionValue& Value);
 	void OnInteract(const FInputActionValue& Value);
-
-public:
-	bool IsWeaponEquipped() const;
-	void AttachWeapon(AWeapon* Weapon);
-	void CollectItem(AItem* Item);
-	void SetCanLookFor(bool var);
 };
