@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/SphereComponent.h"
+#include "Knightspill/Game/EngineClassExtensions/BaseActor.h"
 #include "Knightspill/Systems/Interfaces/Collectible.h"
 
 #include "CollectibleContainer.generated.h"
 
 UCLASS()
-class KNIGHTSPILL_API ACollectibleContainer : public AActor, public ICollectible
+class KNIGHTSPILL_API ACollectibleContainer : public ABaseActor, public ICollectible
 {
 	GENERATED_BODY()
 

@@ -7,6 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Knightspill/Game/EngineClassExtensions/BaseCharacter.h"
 #include "MainCharacter.generated.h"
 
 class AItem;
@@ -16,7 +17,7 @@ struct FInputActionValue;
 class UInputMappingContext;
 
 UCLASS()
-class KNIGHTSPILL_API AMainCharacter : public ACharacter
+class KNIGHTSPILL_API AMainCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 

@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Knightspill/Game/EngineClassExtensions/BaseActor.h"
 #include "Knightspill/Systems/Interfaces/Interactable.h"
 #include "InteractableLight.generated.h"
 
 UCLASS()
-class AInteractableLight : public AActor, public IInteractable
+class AInteractableLight : public ABaseActor, public IInteractable
 {
 	GENERATED_BODY()
 	
