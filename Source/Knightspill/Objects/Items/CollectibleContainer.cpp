@@ -93,6 +93,7 @@ void ACollectibleContainer::OnColliderBeginOverlap(UPrimitiveComponent* Overlapp
 {
 	if (AMainCharacter* character = Cast<AMainCharacter>(OtherActor))
 	{
+		character->SetCanLookFor(true);
 		UE_LOG(LogTemp, Warning, TEXT("Character got into collider"));
 	}
 }
@@ -102,6 +103,7 @@ void ACollectibleContainer::OnColliderEndOverlap(UPrimitiveComponent* Overlapped
 {
 	if (AMainCharacter* character = Cast<AMainCharacter>(OtherActor))
 	{
+		character->SetCanLookFor(false);
 		UE_LOG(LogTemp, Warning, TEXT("Character got out of the collider"));
 	}
 }

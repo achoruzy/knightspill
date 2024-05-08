@@ -39,8 +39,10 @@ private:
 	UPROPERTY(EditAnywhere, Category="Input", meta = (DisplayPriority = 0))
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
 
-	AWeapon* RHandEquipped;
 	AActor* LookAtActor;
+	bool bIsLookingFor;
+	
+	AWeapon* RHandEquipped;
 	TArray<AItem*> CollectedItems;
 
 	void OnMoveForward(const FInputActionValue& Value);
@@ -53,4 +55,5 @@ public:
 	bool IsWeaponEquipped() const;
 	void AttachWeapon(AWeapon* Weapon);
 	void CollectItem(AItem* Item);
+	void SetCanLookFor(bool var);
 };

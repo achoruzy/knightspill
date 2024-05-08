@@ -25,7 +25,7 @@ AMainCharacter::AMainCharacter()
 	SpringArm->SetupAttachment(GetRootComponent());
 	SpringArm->bUsePawnControlRotation = true;
 	SpringArm->bInheritYaw = true;
-	SpringArm->bInheritPitch = true;
+	SpringArm->bInheritPitch = false;
 	SpringArm->bInheritRoll = false;
 	
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("TPPCamera"));
@@ -39,6 +39,8 @@ AMainCharacter::AMainCharacter()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	bIsLookingFor = false;
 }
 
 
@@ -47,16 +49,19 @@ void AMainCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// Trace line for looking at actor
-	FHitResult Hit;
-	FVector TraceStart = GetActorLocation();
-	FVector TraceEnd = GetActorLocation() + Camera->GetForwardVector() * 1500.f;
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-	QueryParams.MobilityType = EQueryMobilityType::Static;
-	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
-	if (Hit.bBlockingHit && IsValid(Hit.GetActor())) LookAtActor = Hit.GetActor();
-	else LookAtActor = nullptr;
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, -1, 0, 1);
+	if (bIsLookingFor)
+	{
+		FHitResult Hit;
+		FVector TraceStart = Camera->GetComponentLocation();
+		FVector TraceEnd = Camera->GetComponentLocation() + Camera->GetForwardVector() * 400.f;
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(this);
+		QueryParams.MobilityType = EQueryMobilityType::Static;
+		GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+		if (Hit.bBlockingHit && IsValid(Hit.GetActor())) LookAtActor = Hit.GetActor();
+		else LookAtActor = nullptr;
+		DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, -1, 0, 1);
+	}
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -153,4 +158,10 @@ void AMainCharacter::AttachWeapon(AWeapon* Weapon)
 void AMainCharacter::CollectItem(AItem* Item)
 {
 	CollectedItems.Add(Item);
+}
+
+void AMainCharacter::SetCanLookFor(bool var)
+{
+	bIsLookingFor = var;
+	if (!bIsLookingFor) LookAtActor = nullptr;
 }
