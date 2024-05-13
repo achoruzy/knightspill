@@ -23,17 +23,17 @@ AMainCharacter::AMainCharacter()
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("TPPSpringArm"));
 	SpringArm->SetupAttachment(GetRootComponent());
-	SpringArm->bUsePawnControlRotation = true;
-	SpringArm->bInheritYaw = true;
-	SpringArm->bInheritPitch = true;
+	SpringArm->bUsePawnControlRotation = false;
+	SpringArm->bInheritYaw = false;
+	SpringArm->bInheritPitch = false;
 	SpringArm->bInheritRoll = false;
 	
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("TPPCamera"));
 	Camera->SetupAttachment(SpringArm);
 
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
-	MovementComponent->bOrientRotationToMovement = false;
-	MovementComponent->bUseControllerDesiredRotation = true;
+	MovementComponent->bOrientRotationToMovement = true;
+	MovementComponent->bUseControllerDesiredRotation = false;
 }
 
 void AMainCharacter::BeginPlay()
@@ -41,6 +41,7 @@ void AMainCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	bIsLookingFor = false;
+	ActiveEquipmentState = ECharacterActiveEquipmentState::Unequipped;
 }
 
 
@@ -145,14 +146,18 @@ void AMainCharacter::OnInteract(const FInputActionValue& Value)
 
 bool AMainCharacter::IsWeaponEquipped() const
 {
-	if (RHandEquipped) return true;
+	if (ActiveEquipmentState != ECharacterActiveEquipmentState::Unequipped) return true;
 	return false;
 }
 
 void AMainCharacter::AttachWeapon(AWeapon* Weapon)
 {
 	const auto Rules = FAttachmentTransformRules::SnapToTargetIncludingScale;
-	if (!IsWeaponEquipped()) Weapon->AttachToComponent(GetMesh(), Rules, "RHandSocket");
+	if (!IsWeaponEquipped())
+	{
+		Weapon->AttachToComponent(GetMesh(), Rules, ECharacterSockets::RHandSocket);
+		ActiveEquipmentState = ECharacterActiveEquipmentState::RightHandWeapon; // TODO: resolve shield option
+	}
 }
 
 void AMainCharacter::CollectItem(AItem* Item)

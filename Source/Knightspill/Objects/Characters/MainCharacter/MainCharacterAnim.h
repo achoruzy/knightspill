@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "MainCharacterEnums.h"
 #include "MainCharacterAnim.generated.h"
 
 class UCharacterMovementComponent;
@@ -25,9 +26,9 @@ public:
 	float GroundSpeed = 0.0f;
 	UPROPERTY(BlueprintReadOnly, Category="Movement")
 	bool IsFalling = false;
+	UPROPERTY(BlueprintReadOnly, Category="Movement")
+	ECharacterActiveEquipmentState ActiveEquipmentState;
 	
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-
-	
 };

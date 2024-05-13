@@ -2,12 +2,14 @@
 
 #pragma once
 
+#include <string>
+
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Knightspill/Game/EngineClassExtensions/BaseCharacter.h"
+#include "Knightspill/Objects/Characters/MainCharacter/MainCharacterEnums.h"
 #include "MainCharacter.generated.h"
 
 class AItem;
@@ -15,6 +17,11 @@ class AWeapon;
 class UInputInterfaceGeneral;
 struct FInputActionValue;
 class UInputMappingContext;
+
+struct ECharacterSockets
+{
+	inline static FName RHandSocket = "RHandSocket";
+};
 
 UCLASS()
 class KNIGHTSPILL_API AMainCharacter : public ABaseCharacter
@@ -28,6 +35,7 @@ private:
 	AActor* LookAtActor;
 	AWeapon* RHandEquipped;
 	TArray<AItem*> CollectedItems;
+	ECharacterActiveEquipmentState ActiveEquipmentState;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* SpringArm;
@@ -49,6 +57,9 @@ public:
 	void AttachWeapon(AWeapon* Weapon);
 	void CollectItem(AItem* Item);
 	void SetCanLookFor(bool var);
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE ECharacterActiveEquipmentState GetActiveEquipmentState() const { return ActiveEquipmentState; }
 	
 protected:
 	virtual void BeginPlay() override;
