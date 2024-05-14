@@ -17,6 +17,7 @@ class AWeapon;
 class UInputInterfaceGeneral;
 struct FInputActionValue;
 class UInputMappingContext;
+class UAnimMontage;
 
 struct ECharacterSockets
 {
@@ -36,6 +37,7 @@ private:
 	AWeapon* RHandEquipped;
 	TArray<AItem*> CollectedItems;
 	ECharacterActiveEquipmentState ActiveEquipmentState;
+	ECharacterActionState ActionState;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* SpringArm;
@@ -44,8 +46,12 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category="Input", meta = (DisplayPriority = 0))
 	UInputInterfaceGeneral* InputInterface;
-	UPROPERTY(EditAnywhere, Category="Input", meta = (DisplayPriority = 0))
+	UPROPERTY(EditAnywhere, Category="Input", meta = (DisplayPriority = 1))
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
+
+	//** ANIM MONTAGES */
+	UPROPERTY(EditDefaultsOnly, Category="AnimMontages")
+	UAnimMontage* AttackMontage;
 	
 public:
 	AMainCharacter();
@@ -54,12 +60,16 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool IsWeaponEquipped() const;
+	UFUNCTION(BlueprintPure)
+	bool IsBusy() const;
 	void AttachWeapon(AWeapon* Weapon);
 	void CollectItem(AItem* Item);
 	void SetCanLookFor(bool var);
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE ECharacterActiveEquipmentState GetActiveEquipmentState() const { return ActiveEquipmentState; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void ResetActionState() { ActionState = ECharacterActionState::Unoccupied; }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -70,4 +80,7 @@ private:
 	void OnLook(const FInputActionValue& Value);
 	void OnJump(const FInputActionValue& Value);
 	void OnInteract(const FInputActionValue& Value);
+	void OnAttackLight(const FInputActionValue& Value);
+
+	void PlayAnimMontage(UAnimMontage* Montage);
 };

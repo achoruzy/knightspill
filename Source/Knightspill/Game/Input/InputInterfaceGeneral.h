@@ -26,4 +26,6 @@ public:
 	UInputAction* Jump;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* Interact;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UInputAction* AttackLight;
 };

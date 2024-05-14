@@ -12,6 +12,7 @@
 #include "Knightspill/Systems/Interfaces/Interactable.h"
 #include "Knightspill/Objects/Items/Item.h"
 #include "Knightspill/Objects/Items/Equipment/Weapons/Weapon.h"
+#include "Animation/AnimMontage.h"
 
 AMainCharacter::AMainCharacter()
 {
@@ -23,17 +24,17 @@ AMainCharacter::AMainCharacter()
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("TPPSpringArm"));
 	SpringArm->SetupAttachment(GetRootComponent());
-	SpringArm->bUsePawnControlRotation = false;
-	SpringArm->bInheritYaw = false;
-	SpringArm->bInheritPitch = false;
+	SpringArm->bUsePawnControlRotation = true;
+	SpringArm->bInheritYaw = true;
+	SpringArm->bInheritPitch = true;
 	SpringArm->bInheritRoll = false;
 	
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("TPPCamera"));
 	Camera->SetupAttachment(SpringArm);
 
 	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
-	MovementComponent->bOrientRotationToMovement = true;
-	MovementComponent->bUseControllerDesiredRotation = false;
+	MovementComponent->bOrientRotationToMovement = false;
+	MovementComponent->bUseControllerDesiredRotation = true;
 }
 
 void AMainCharacter::BeginPlay()
@@ -42,6 +43,7 @@ void AMainCharacter::BeginPlay()
 
 	bIsLookingFor = false;
 	ActiveEquipmentState = ECharacterActiveEquipmentState::Unequipped;
+	ActionState = ECharacterActionState::Unoccupied;
 }
 
 
@@ -86,6 +88,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Input->BindAction(InputInterface->Look, ETriggerEvent::Triggered, this, &AMainCharacter::OnLook);
 	Input->BindAction(InputInterface->Jump, ETriggerEvent::Triggered, this, &AMainCharacter::OnJump);
 	Input->BindAction(InputInterface->Interact, ETriggerEvent::Triggered, this, &AMainCharacter::OnInteract);
+	Input->BindAction(InputInterface->AttackLight, ETriggerEvent::Triggered, this, &AMainCharacter::OnAttackLight);
 }
 
 void AMainCharacter::OnMoveForward(const FInputActionValue& Value)
@@ -144,10 +147,37 @@ void AMainCharacter::OnInteract(const FInputActionValue& Value)
 	}
 }
 
+void AMainCharacter::OnAttackLight(const FInputActionValue& Value)
+{
+	if (!IsBusy() && IsWeaponEquipped())
+	{
+		ActionState = ECharacterActionState::Attacking;
+		PlayAnimMontage(AttackMontage);
+	}
+}
+
+void AMainCharacter::PlayAnimMontage(UAnimMontage* Montage)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); // TODO: logic to generalize into a static function util
+	if (AnimInstance && Montage)
+	{
+		int32 sectionNum = FMath::RandRange(0, Montage->GetNumSections() - 1);
+		FName section = Montage->GetSectionName(sectionNum);		
+		AnimInstance->Montage_Play(Montage);
+		AnimInstance->Montage_JumpToSection(section, Montage);
+	}
+}
+
 bool AMainCharacter::IsWeaponEquipped() const
 {
-	if (ActiveEquipmentState != ECharacterActiveEquipmentState::Unequipped) return true;
+	if (ActiveEquipmentState != ECharacterActiveEquipmentState::Unequipped) return true; // TODO: actually to think about shield
 	return false;
+}
+
+bool AMainCharacter::IsBusy() const
+{
+	if (ActionState == ECharacterActionState::Unoccupied) return false;
+	return true;
 }
 
 void AMainCharacter::AttachWeapon(AWeapon* Weapon)

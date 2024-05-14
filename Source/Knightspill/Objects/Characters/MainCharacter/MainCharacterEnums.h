@@ -13,3 +13,11 @@ enum class ECharacterActiveEquipmentState : uint8
 	Shield,
 	RightHandWeaponAndShield
 };
+
+UENUM(BlueprintType)
+enum class ECharacterActionState : uint8
+{
+	Unoccupied,
+	Attacking,
+	Jumping
+};
