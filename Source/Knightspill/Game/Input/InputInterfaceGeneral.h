@@ -27,5 +27,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* Interact;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UInputAction* WeaponEquip;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* AttackLight;
 };

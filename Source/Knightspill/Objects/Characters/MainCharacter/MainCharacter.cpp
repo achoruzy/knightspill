@@ -88,6 +88,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Input->BindAction(InputInterface->Look, ETriggerEvent::Triggered, this, &AMainCharacter::OnLook);
 	Input->BindAction(InputInterface->Jump, ETriggerEvent::Triggered, this, &AMainCharacter::OnJump);
 	Input->BindAction(InputInterface->Interact, ETriggerEvent::Triggered, this, &AMainCharacter::OnInteract);
+	Input->BindAction(InputInterface->WeaponEquip, ETriggerEvent::Triggered, this, &AMainCharacter::OnWeaponEquip);
 	Input->BindAction(InputInterface->AttackLight, ETriggerEvent::Triggered, this, &AMainCharacter::OnAttackLight);
 }
 
@@ -147,6 +148,19 @@ void AMainCharacter::OnInteract(const FInputActionValue& Value)
 	}
 }
 
+void AMainCharacter::OnWeaponEquip(const FInputActionValue& Value)
+{
+	if (!IsBusy())
+	{
+		if (IsWeaponEquipped())
+		{
+			// unequip
+			return;
+		}
+		// equip
+	}
+}
+
 void AMainCharacter::OnAttackLight(const FInputActionValue& Value)
 {
 	if (!IsBusy() && IsWeaponEquipped())
@@ -156,15 +170,20 @@ void AMainCharacter::OnAttackLight(const FInputActionValue& Value)
 	}
 }
 
-void AMainCharacter::PlayAnimMontage(UAnimMontage* Montage)
+void AMainCharacter::PlayAnimMontage(UAnimMontage* Montage) const
+{
+	int32 sectionNum = FMath::RandRange(0, Montage->GetNumSections() - 1);
+	FName section = Montage->GetSectionName(sectionNum);
+	PlayAnimMontage(Montage, section);
+}
+
+void AMainCharacter::PlayAnimMontage(UAnimMontage* Montage, const FName& Section) const
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); // TODO: logic to generalize into a static function util
 	if (AnimInstance && Montage)
 	{
-		int32 sectionNum = FMath::RandRange(0, Montage->GetNumSections() - 1);
-		FName section = Montage->GetSectionName(sectionNum);		
 		AnimInstance->Montage_Play(Montage);
-		AnimInstance->Montage_JumpToSection(section, Montage);
+		AnimInstance->Montage_JumpToSection(Section, Montage);
 	}
 }
 

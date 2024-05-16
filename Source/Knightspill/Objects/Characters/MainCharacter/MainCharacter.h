@@ -80,7 +80,9 @@ private:
 	void OnLook(const FInputActionValue& Value);
 	void OnJump(const FInputActionValue& Value);
 	void OnInteract(const FInputActionValue& Value);
+	void OnWeaponEquip(const FInputActionValue& Value);
 	void OnAttackLight(const FInputActionValue& Value);
 
-	void PlayAnimMontage(UAnimMontage* Montage);
+	void PlayAnimMontage(UAnimMontage* Montage) const;
+	void PlayAnimMontage(UAnimMontage* Montage, const FName& Section) const;
 };
