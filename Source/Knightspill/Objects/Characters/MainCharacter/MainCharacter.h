@@ -52,6 +52,13 @@ private:
 	//** ANIM MONTAGES */
 	UPROPERTY(EditDefaultsOnly, Category="AnimMontages")
 	UAnimMontage* AttackMontage;
+	UPROPERTY(EditDefaultsOnly, Category="AnimMontages")
+	UAnimMontage* WeaponEquipMontage;
+
+	UFUNCTION(BlueprintCallable, Meta = (AllowPrivateAccess = "true"))
+	void ArmWeapon();
+	UFUNCTION(BlueprintCallable, Meta = (AllowPrivateAccess = "true"))
+	void DisarmWeapon();
 	
 public:
 	AMainCharacter();
@@ -81,6 +88,7 @@ private:
 	void OnJump(const FInputActionValue& Value);
 	void OnInteract(const FInputActionValue& Value);
 	void OnWeaponEquip(const FInputActionValue& Value);
+	
 	void OnAttackLight(const FInputActionValue& Value);
 
 	void PlayAnimMontage(UAnimMontage* Montage) const;

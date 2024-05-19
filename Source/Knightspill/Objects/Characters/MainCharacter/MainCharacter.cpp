@@ -150,15 +150,27 @@ void AMainCharacter::OnInteract(const FInputActionValue& Value)
 
 void AMainCharacter::OnWeaponEquip(const FInputActionValue& Value)
 {
-	if (!IsBusy())
-	{
+	// if (!IsBusy() && RHandEquipped != nullptr)
+	// {
 		if (IsWeaponEquipped())
 		{
-			// unequip
-			return;
+			PlayAnimMontage(WeaponEquipMontage, FName("Unequip"));
 		}
-		// equip
-	}
+		else
+		{
+			PlayAnimMontage(WeaponEquipMontage, FName("Equip"));
+		}
+	// }
+}
+
+void AMainCharacter::ArmWeapon()
+{
+	RHandEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "RHandSocket");
+}
+
+void AMainCharacter::DisarmWeapon()
+{
+	RHandEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "SwordSlotBack");
 }
 
 void AMainCharacter::OnAttackLight(const FInputActionValue& Value)
