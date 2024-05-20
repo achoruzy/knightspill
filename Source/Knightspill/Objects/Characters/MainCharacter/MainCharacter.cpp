@@ -150,27 +150,37 @@ void AMainCharacter::OnInteract(const FInputActionValue& Value)
 
 void AMainCharacter::OnWeaponEquip(const FInputActionValue& Value)
 {
-	// if (!IsBusy() && RHandEquipped != nullptr)
-	// {
+	if (!IsBusy())
+	{
 		if (IsWeaponEquipped())
 		{
+			ActionState = ECharacterActionState::Animating;
 			PlayAnimMontage(WeaponEquipMontage, FName("Unequip"));
 		}
 		else
 		{
+			ActionState = ECharacterActionState::Animating;
 			PlayAnimMontage(WeaponEquipMontage, FName("Equip"));
 		}
-	// }
+	}
 }
 
 void AMainCharacter::ArmWeapon()
 {
-	RHandEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "RHandSocket");
+	if (RHandEquipped)
+	{
+		RHandEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RHandSocket"));
+		ActiveEquipmentState = ECharacterActiveEquipmentState::RightHandWeapon;
+	}
 }
 
 void AMainCharacter::DisarmWeapon()
 {
-	RHandEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "SwordSlotBack");
+	if (RHandEquipped)
+	{
+		RHandEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("SwordSlotBack"));
+		ActiveEquipmentState = ECharacterActiveEquipmentState::Unequipped;
+	}
 }
 
 void AMainCharacter::OnAttackLight(const FInputActionValue& Value)
@@ -218,6 +228,7 @@ void AMainCharacter::AttachWeapon(AWeapon* Weapon)
 	{
 		Weapon->AttachToComponent(GetMesh(), Rules, ECharacterSockets::RHandSocket);
 		ActiveEquipmentState = ECharacterActiveEquipmentState::RightHandWeapon; // TODO: resolve shield option
+		RHandEquipped = Weapon;
 	}
 }
 
