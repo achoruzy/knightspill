@@ -155,12 +155,12 @@ void AMainCharacter::OnWeaponEquip(const FInputActionValue& Value)
 		if (IsWeaponEquipped())
 		{
 			ActionState = ECharacterActionState::Animating;
-			PlayAnimMontage(WeaponEquipMontage, FName("Unequip"));
+			PlayAnimationMontage(WeaponEquipMontage, FName("Unequip"));
 		}
 		else
 		{
 			ActionState = ECharacterActionState::Animating;
-			PlayAnimMontage(WeaponEquipMontage, FName("Equip"));
+			PlayAnimationMontage(WeaponEquipMontage, FName("Equip"));
 		}
 	}
 }
@@ -188,18 +188,18 @@ void AMainCharacter::OnAttackLight(const FInputActionValue& Value)
 	if (!IsBusy() && IsWeaponEquipped())
 	{
 		ActionState = ECharacterActionState::Attacking;
-		PlayAnimMontage(AttackMontage);
+		PlayAnimationMontage(AttackMontage);
 	}
 }
 
-void AMainCharacter::PlayAnimMontage(UAnimMontage* Montage) const
+void AMainCharacter::PlayAnimationMontage(UAnimMontage* Montage) const
 {
 	int32 sectionNum = FMath::RandRange(0, Montage->GetNumSections() - 1);
 	FName section = Montage->GetSectionName(sectionNum);
-	PlayAnimMontage(Montage, section);
+	PlayAnimationMontage(Montage, section);
 }
 
-void AMainCharacter::PlayAnimMontage(UAnimMontage* Montage, const FName& Section) const
+void AMainCharacter::PlayAnimationMontage(UAnimMontage* Montage, const FName& Section) const
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); // TODO: logic to generalize into a static function util
 	if (AnimInstance && Montage)

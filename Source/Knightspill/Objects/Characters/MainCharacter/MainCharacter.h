@@ -36,7 +36,10 @@ private:
 	AActor* LookAtActor;
 	AWeapon* RHandEquipped;
 	TArray<AItem*> CollectedItems;
+
+	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	ECharacterActiveEquipmentState ActiveEquipmentState;
+	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	ECharacterActionState ActionState;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
@@ -91,6 +94,6 @@ private:
 	
 	void OnAttackLight(const FInputActionValue& Value);
 
-	void PlayAnimMontage(UAnimMontage* Montage) const;
-	void PlayAnimMontage(UAnimMontage* Montage, const FName& Section) const;
+	void PlayAnimationMontage(UAnimMontage* Montage) const;
+	void PlayAnimationMontage(UAnimMontage* Montage, const FName& Section) const;
 };
