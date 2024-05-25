@@ -170,6 +170,7 @@ void AMainCharacter::ArmWeapon()
 	if (RHandEquipped)
 	{
 		RHandEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RHandSocket"));
+		RHandEquipped->SetActive(true);
 		ActiveEquipmentState = ECharacterActiveEquipmentState::RightHandWeapon;
 	}
 }
@@ -179,6 +180,7 @@ void AMainCharacter::DisarmWeapon()
 	if (RHandEquipped)
 	{
 		RHandEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("SwordSlotBack"));
+		RHandEquipped->SetActive(false);
 		ActiveEquipmentState = ECharacterActiveEquipmentState::Unequipped;
 	}
 }
@@ -227,6 +229,7 @@ void AMainCharacter::AttachWeapon(AWeapon* Weapon)
 	if (!IsWeaponEquipped())
 	{
 		Weapon->AttachToComponent(GetMesh(), Rules, ECharacterSockets::RHandSocket);
+		Weapon->SetActive(true);
 		ActiveEquipmentState = ECharacterActiveEquipmentState::RightHandWeapon; // TODO: resolve shield option
 		RHandEquipped = Weapon;
 	}
