@@ -80,6 +80,10 @@ public:
 	FORCEINLINE ECharacterActiveEquipmentState GetActiveEquipmentState() const { return ActiveEquipmentState; }
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void ResetActionState() { ActionState = ECharacterActionState::Unoccupied; }
+	UFUNCTION(BlueprintCallable)
+	void StartDamaging();
+	UFUNCTION(BlueprintCallable)
+	void StopDamaging();
 	
 protected:
 	virtual void BeginPlay() override;

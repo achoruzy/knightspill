@@ -37,6 +37,7 @@ AMainCharacter::AMainCharacter()
 	MovementComponent->bUseControllerDesiredRotation = true;
 }
 
+
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -229,7 +230,6 @@ void AMainCharacter::AttachWeapon(AWeapon* Weapon)
 	if (!IsWeaponEquipped())
 	{
 		Weapon->AttachToComponent(GetMesh(), Rules, ECharacterSockets::RHandSocket);
-		Weapon->SetActive(true);
 		ActiveEquipmentState = ECharacterActiveEquipmentState::RightHandWeapon; // TODO: resolve shield option
 		RHandEquipped = Weapon;
 	}
@@ -244,4 +244,13 @@ void AMainCharacter::SetCanLookFor(bool var)
 {
 	bIsLookingFor = var;
 	if (!bIsLookingFor) LookAtActor = nullptr;
+}
+void AMainCharacter::StartDamaging()
+{
+	RHandEquipped->SetActive(true);
+}
+
+void AMainCharacter::StopDamaging()
+{
+	RHandEquipped->SetActive(false);
 }

@@ -8,14 +8,14 @@
 AWeapon::AWeapon()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	IsEquipped = false;
+	// IsEquipped = false;
 	
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = StaticMesh;
 
 	WeaponBoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponBoxCollider"));
 	WeaponBoxCollider->SetupAttachment(RootComponent);
-	WeaponBoxCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	WeaponBoxCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponBoxCollider->SetCollisionResponseToChannels(ECollisionResponse::ECR_Overlap);
 	WeaponBoxCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	
@@ -47,13 +47,17 @@ void AWeapon::Collect_Implementation(AMainCharacter* Character)
 
 void AWeapon::SetActive(bool value)
 {
-	IsEquipped = value;
+	// IsEquipped = value;
+	if (value)
+		WeaponBoxCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	else
+		WeaponBoxCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                            int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!IsEquipped) return;
+	// if (!IsEquipped) return;
 	const FVector Start = HitTraceStart->GetComponentLocation();
 	const FVector End = HitTraceEnd->GetComponentLocation();
 	const FVector HalfSize {2.5f, 2.5f, 2.5f};

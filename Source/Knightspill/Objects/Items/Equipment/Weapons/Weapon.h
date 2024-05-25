@@ -20,8 +20,8 @@ public:
 	UStaticMeshComponent* StaticMesh;
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	bool IsEquipped;
+	// UPROPERTY(VisibleAnywhere)
+	// bool IsEquipped;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, meta=(AllowPrivateAccess = "true"))
