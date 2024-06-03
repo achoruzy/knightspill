@@ -195,23 +195,6 @@ void AMainCharacter::OnAttackLight(const FInputActionValue& Value)
 	}
 }
 
-void AMainCharacter::PlayAnimationMontage(UAnimMontage* Montage) const
-{
-	int32 sectionNum = FMath::RandRange(0, Montage->GetNumSections() - 1);
-	FName section = Montage->GetSectionName(sectionNum);
-	PlayAnimationMontage(Montage, section);
-}
-
-void AMainCharacter::PlayAnimationMontage(UAnimMontage* Montage, const FName& Section) const
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); // TODO: logic to generalize into a static function util
-	if (AnimInstance && Montage)
-	{
-		AnimInstance->Montage_Play(Montage);
-		AnimInstance->Montage_JumpToSection(Section, Montage);
-	}
-}
-
 bool AMainCharacter::IsWeaponEquipped() const
 {
 	if (ActiveEquipmentState != ECharacterActiveEquipmentState::Unequipped) return true; // TODO: actually to think about shield

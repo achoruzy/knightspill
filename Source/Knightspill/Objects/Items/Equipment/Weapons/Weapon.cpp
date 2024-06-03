@@ -3,6 +3,7 @@
 
 #include "Weapon.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Knightspill/Systems/Interfaces/Hittable.h"
 
 
 AWeapon::AWeapon()
@@ -61,7 +62,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	const FVector Start = HitTraceStart->GetComponentLocation();
 	const FVector End = HitTraceEnd->GetComponentLocation();
 	const FVector HalfSize {2.5f, 2.5f, 2.5f};
-	TArray<AActor*> ActorsToIgnore {this, this->GetOwner()};
+	const TArray<AActor*> ActorsToIgnore {this, this->GetOwner()};
 	FHitResult HitData;
 
 	UKismetSystemLibrary::BoxTraceSingle(
@@ -76,4 +77,9 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		EDrawDebugTrace::ForDuration,
 		HitData,
 		true);
+
+	if (const auto HittableActor = Cast<IHittable>(HitData.GetActor()))
+	{
+		HittableActor->GetHit_Implementation(Damage, HitData.Location, HitData.Normal);
+	}
 }

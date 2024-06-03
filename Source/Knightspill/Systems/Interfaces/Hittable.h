@@ -20,6 +20,6 @@ class KNIGHTSPILL_API IHittable
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintNativeEvent)
-	void GetHit(int Damage);
-	virtual void GetHit_Implementation(int Damage) = 0;
+	void GetHit(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal);
+	virtual void GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal) = 0;
 };

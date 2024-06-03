@@ -32,6 +32,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void PlayAnimationMontage(UAnimMontage* Montage) const;
+	virtual void PlayAnimationMontage(UAnimMontage* Montage, const FName& Section) const;
 
 private:
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;

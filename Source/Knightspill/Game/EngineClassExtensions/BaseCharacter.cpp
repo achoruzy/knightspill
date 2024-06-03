@@ -43,3 +43,20 @@ void ABaseCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) c
 	TagContainer = GameplayTags;
 }
 
+void ABaseCharacter::PlayAnimationMontage(UAnimMontage* Montage) const
+{
+	int32 sectionNum = FMath::RandRange(0, Montage->GetNumSections() - 1);
+	FName section = Montage->GetSectionName(sectionNum);
+	PlayAnimationMontage(Montage, section);
+}
+
+void ABaseCharacter::PlayAnimationMontage(UAnimMontage* Montage, const FName& Section) const
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && Montage)
+	{
+		AnimInstance->Montage_Play(Montage);
+		AnimInstance->Montage_JumpToSection(Section, Montage);
+	}
+}
+

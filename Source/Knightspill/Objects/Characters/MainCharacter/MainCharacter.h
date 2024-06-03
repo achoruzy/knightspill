@@ -33,7 +33,9 @@ public:
 	bool bIsLookingFor;
 
 private:
+	UPROPERTY()
 	AActor* LookAtActor;
+	UPROPERTY()
 	AWeapon* RHandEquipped;
 	TArray<AItem*> CollectedItems;
 
@@ -97,7 +99,4 @@ private:
 	void OnWeaponEquip(const FInputActionValue& Value);
 	
 	void OnAttackLight(const FInputActionValue& Value);
-
-	void PlayAnimationMontage(UAnimMontage* Montage) const;
-	void PlayAnimationMontage(UAnimMontage* Montage, const FName& Section) const;
 };

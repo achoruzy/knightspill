@@ -32,3 +32,15 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal)
+{
+	const FVector Forward = GetActorForwardVector();
+	const FVector ToHitPos = (DamagePosition - GetActorLocation()).GetSafeNormal();
+	const FVector FlattenHitPos(ToHitPos.X, ToHitPos.Y, Forward.Z);
+	const double CosTheta = FVector::DotProduct(Forward, FlattenHitPos);
+	const double Theta = FMath::RadiansToDegrees(FMath::Acos(CosTheta));
+
+	const FVector Sign = FVector::CrossProduct(Forward, FlattenHitPos);
+
+	UE_LOG(LogTemp, Warning, TEXT("Got Hit with %d pts! Angle: %f"), DamageValue, Theta);
+}
