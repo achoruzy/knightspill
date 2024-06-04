@@ -34,6 +34,8 @@ private:
 	USceneComponent* HitTraceStart;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	USceneComponent* HitTraceEnd;
+	UPROPERTY()
+	TArray<AActor*> ActorsToIgnore;
 	
 public:	
 	AWeapon();
@@ -42,9 +44,12 @@ public:
 	virtual void Collect_Implementation(AMainCharacter* Character) override;
 	UFUNCTION(BlueprintCallable)
 	void SetActive(bool value);
+	UFUNCTION()
+	void ResetActorsToIgnore();
 	
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
 	void OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+private:
 };

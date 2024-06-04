@@ -41,6 +41,21 @@ void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamageP
 	const double Theta = FMath::RadiansToDegrees(FMath::Acos(CosTheta));
 
 	const FVector Sign = FVector::CrossProduct(Forward, FlattenHitPos);
-
-	UE_LOG(LogTemp, Warning, TEXT("Got Hit with %d pts! Angle: %f"), DamageValue, Theta);
+	
+	if (Theta > -45.f && Theta < 45.f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Got Hit from front"));
+	}
+	else if (Theta <= -45.f && Theta >= -135.f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Got Hit from left"));
+	}
+	else if (Theta >= 45.f && Theta <= -135.f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Got Hit from right"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Got Hit from back"));
+	}
 }

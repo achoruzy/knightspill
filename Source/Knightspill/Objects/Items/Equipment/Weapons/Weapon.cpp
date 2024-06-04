@@ -24,6 +24,8 @@ AWeapon::AWeapon()
 	HitTraceStart->SetupAttachment(RootComponent);
 	HitTraceEnd = CreateDefaultSubobject<USceneComponent>(TEXT("HitTraceEnd"));
 	HitTraceEnd->SetupAttachment(RootComponent);
+
+	ResetActorsToIgnore();
 }
 
 void AWeapon::BeginPlay()
@@ -52,7 +54,10 @@ void AWeapon::SetActive(bool value)
 	if (value)
 		WeaponBoxCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	else
+	{
 		WeaponBoxCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+	
 }
 
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -62,7 +67,6 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	const FVector Start = HitTraceStart->GetComponentLocation();
 	const FVector End = HitTraceEnd->GetComponentLocation();
 	const FVector HalfSize {2.5f, 2.5f, 2.5f};
-	const TArray<AActor*> ActorsToIgnore {this, this->GetOwner()};
 	FHitResult HitData;
 
 	UKismetSystemLibrary::BoxTraceSingle(
@@ -81,5 +85,13 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	if (const auto HittableActor = Cast<IHittable>(HitData.GetActor()))
 	{
 		HittableActor->GetHit_Implementation(Damage, HitData.Location, HitData.Normal);
+		ActorsToIgnore.AddUnique(HitData.GetActor());
 	}
+}
+
+void AWeapon::ResetActorsToIgnore()
+{
+	ActorsToIgnore.Empty();
+	ActorsToIgnore.AddUnique(this);
+	ActorsToIgnore.AddUnique(this->Owner);
 }

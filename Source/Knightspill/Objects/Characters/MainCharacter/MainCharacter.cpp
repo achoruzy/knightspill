@@ -236,4 +236,8 @@ void AMainCharacter::StartDamaging()
 void AMainCharacter::StopDamaging()
 {
 	RHandEquipped->SetActive(false);
+	if (AWeapon* Weapon = Cast<AWeapon>(RHandEquipped))
+	{
+		Weapon->ResetActorsToIgnore();
+	}
 }
