@@ -44,18 +44,18 @@ void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamageP
 	
 	if (Theta > -45.f && Theta < 45.f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Got Hit from front"));
+		PlayAnimationMontage(HitReactionMontage, FName("HitReactFront"));
 	}
 	else if (Theta <= -45.f && Theta >= -135.f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Got Hit from left"));
+		PlayAnimationMontage(HitReactionMontage, FName("HitReactLeft"));
 	}
 	else if (Theta >= 45.f && Theta <= -135.f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Got Hit from right"));
+		PlayAnimationMontage(HitReactionMontage, FName("HitReactRight"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Got Hit from back"));
+		PlayAnimationMontage(HitReactionMontage, FName("HitReactBack"));
 	}
 }

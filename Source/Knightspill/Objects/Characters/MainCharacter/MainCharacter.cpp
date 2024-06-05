@@ -64,7 +64,7 @@ void AMainCharacter::Tick(float DeltaTime)
 		GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
 		if (Hit.bBlockingHit && IsValid(Hit.GetActor())) LookAtActor = Hit.GetActor();
 		else LookAtActor = nullptr;
-		DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, -1, 0, 1);
+		DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, -1, 0, 0.1f);
 	}
 }
 
