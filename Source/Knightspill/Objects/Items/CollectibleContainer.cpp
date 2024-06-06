@@ -117,5 +117,5 @@ void ACollectibleContainer::ToggleHighlight(bool var)
 {
 	if (!HighlightOverlayMaterial) return;
 	if (var) Mesh->SetOverlayMaterial(HighlightOverlayMaterial);
-	else Mesh->SetOverlayMaterial(HighlightOverlayMaterial);
+	else Mesh->SetOverlayMaterial(nullptr);
 }
