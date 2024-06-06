@@ -98,6 +98,7 @@ void ACollectibleContainer::OnColliderBeginOverlap(UPrimitiveComponent* Overlapp
 	{
 		character->SetCanLookFor(true);
 		UE_LOG(LogTemp, Warning, TEXT("Character got into collider"));
+		ToggleHighlight(true);
 	}
 }
 
@@ -108,5 +109,13 @@ void ACollectibleContainer::OnColliderEndOverlap(UPrimitiveComponent* Overlapped
 	{
 		character->SetCanLookFor(false);
 		UE_LOG(LogTemp, Warning, TEXT("Character got out of the collider"));
+		ToggleHighlight(false);
 	}
+}
+
+void ACollectibleContainer::ToggleHighlight(bool var)
+{
+	if (!HighlightOverlayMaterial) return;
+	if (var) Mesh->SetOverlayMaterial(HighlightOverlayMaterial);
+	else Mesh->SetOverlayMaterial(HighlightOverlayMaterial);
 }

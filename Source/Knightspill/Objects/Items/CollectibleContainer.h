@@ -26,14 +26,19 @@ private:
 	USphereComponent* Collider;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* Mesh;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UMaterialInstance* HighlightOverlayMaterial;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AItem> ItemClass;
+	UPROPERTY()
 	AItem* Item;
 	
 public:
 	ACollectibleContainer();
 	virtual void Tick(float DeltaTime) override;
 	virtual void Collect_Implementation(AMainCharacter* Character) override;
+	UFUNCTION(BlueprintCallable)
+	void ToggleHighlight(bool var);
 
 protected:
 	virtual void BeginPlay() override;
