@@ -78,16 +78,16 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		ETraceTypeQuery::TraceTypeQuery1,
 		true,
 		ActorsToIgnore,
-		EDrawDebugTrace::None,
+		EDrawDebugTrace::ForDuration,
 		HitData,
 		true);
 
 	if (const auto HittableActor = Cast<IHittable>(HitData.GetActor()))
 	{
-		HittableActor->GetHit_Implementation(Damage, HitData.Location, HitData.Normal);
+		HittableActor->Execute_GetHit(HitData.GetActor(), Damage, HitData.Location, HitData.Normal);
 		ActorsToIgnore.AddUnique(HitData.GetActor());
 	}
-	CreateForceFields(HitData.ImpactPoint);
+	CreateForceFields(HitData.Location);
 }
 
 void AWeapon::ResetActorsToIgnore()

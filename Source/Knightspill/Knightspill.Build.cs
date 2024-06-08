@@ -16,7 +16,8 @@ public class Knightspill : ModuleRules
 			"InputCore", 
 			"EnhancedInput", 
 			"GameplayTags", 
-			"GameplayAbilities"
+			"GameplayAbilities",
+			"GeometryCollectionEngine"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
