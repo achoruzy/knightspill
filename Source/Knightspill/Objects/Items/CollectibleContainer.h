@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SphereComponent.h"
+#include "NiagaraComponent.h"
 #include "Knightspill/Game/EngineClassExtensions/BaseActor.h"
 #include "Knightspill/Systems/Interfaces/Collectible.h"
 
@@ -32,6 +33,8 @@ private:
 	TSubclassOf<AItem> ItemClass;
 	UPROPERTY()
 	AItem* Item;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UNiagaraComponent* Vfx;
 	
 public:
 	ACollectibleContainer();
@@ -39,6 +42,7 @@ public:
 	virtual void Collect_Implementation(AMainCharacter* Character) override;
 	UFUNCTION(BlueprintCallable)
 	void ToggleHighlight(bool var);
+	void SetItem(const TSubclassOf<AItem>& Item);
 
 protected:
 	virtual void BeginPlay() override;

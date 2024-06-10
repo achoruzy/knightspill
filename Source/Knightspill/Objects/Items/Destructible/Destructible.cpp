@@ -4,7 +4,9 @@
 #include "Destructible.h"
 
 #include "GeometryCollection/GeometryCollectionComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Knightspill/Objects/Items/CollectibleContainer.h"
 
 
 ADestructible::ADestructible()
@@ -42,6 +44,8 @@ void ADestructible::GetHit_Implementation(const int DamageValue, const FVector& 
 		const int32 Chance = UKismetMathLibrary::RandomBoolWithWeight(TreasureChance);
 		if (!Chance) return;
 		const int32 Selection = FMath::RandRange(0, SpawnTreasures.Num() - 1);
-		GetWorld()->SpawnActor<AItem>(SpawnTreasures[Selection], GetActorLocation(), GetActorRotation());
+		const auto Container = GetWorld()->SpawnActorDeferred<ACollectibleContainer>(ContainerClass, FTransform(GetActorRotation(), GetActorLocation()));
+		Container->SetItem(SpawnTreasures[Selection]);
+		UGameplayStatics::FinishSpawningActor(Container, FTransform(GetActorRotation(), GetActorLocation()));
 	}
 }

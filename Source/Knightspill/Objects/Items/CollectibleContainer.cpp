@@ -17,7 +17,11 @@ ACollectibleContainer::ACollectibleContainer()
 	Collider->SetCollisionEnabled(ECollisionEnabled::Type::QueryOnly);
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetupAttachment(RootComponent);
+	Vfx = CreateDefaultSubobject<UNiagaraComponent>(TEXT("VFX"));
+	Vfx->SetupAttachment(RootComponent);
 }
+
 
 void ACollectibleContainer::BeginPlay()
 {
@@ -89,6 +93,11 @@ void ACollectibleContainer::Collect_Implementation(AMainCharacter* Character)
 			}
 		}	
 	}
+}
+
+void ACollectibleContainer::SetItem(const TSubclassOf<AItem>& NewItemClass)
+{
+	ItemClass = NewItemClass;
 }
 
 void ACollectibleContainer::OnColliderBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

@@ -9,6 +9,7 @@
 #include "Knightspill/Systems/Interfaces/Hittable.h"
 #include "Destructible.generated.h"
 
+class ACollectibleContainer;
 class UGeometryCollectionComponent;
 
 UCLASS()
@@ -26,6 +27,8 @@ private:
 	UCapsuleComponent* CollisionCapsule;
 	UPROPERTY(EditAnywhere, Category="Treasures", Meta = (AllowPrivateAccess = "true"))
 	TArray<TSubclassOf<AItem>> SpawnTreasures;
+	UPROPERTY(EditAnywhere, Category="Treasures", Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ACollectibleContainer> ContainerClass;
 
 public:
 	ADestructible();
