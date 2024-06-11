@@ -89,7 +89,7 @@ void ACollectibleContainer::Collect_Implementation(AMainCharacter* Character)
 			if (auto collectable = Cast<AItem>(Item))
 			{
 				Character->CollectItem(collectable);
-				// destroy not needed as prop stays on level
+				if (!bHasOwnMesh) Destroy();
 			}
 		}	
 	}

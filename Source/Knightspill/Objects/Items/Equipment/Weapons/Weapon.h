@@ -11,7 +11,7 @@
 #include "Weapon.generated.h"
 
 UCLASS()
-class KNIGHTSPILL_API AWeapon : public AItem, public IAttachable, public ICollectible
+class KNIGHTSPILL_API AWeapon : public AItem, public IAttachable
 {
 	GENERATED_BODY()
 
@@ -25,7 +25,8 @@ private:
 
 protected:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, meta=(AllowPrivateAccess = "true"))
-	int Damage = 0;
+	int Damage = 0; // TODO: Get out to a component and all other characteristics
+	// TODO: setup weapons to data tables
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
@@ -41,7 +42,6 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	virtual void Attach_Implementation(AMainCharacter* Character) override;
-	virtual void Collect_Implementation(AMainCharacter* Character) override;
 	UFUNCTION(BlueprintCallable)
 	void SetActive(bool value);
 	UFUNCTION()

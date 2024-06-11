@@ -18,7 +18,8 @@ public class Knightspill : ModuleRules
 			"GameplayTags", 
 			"GameplayAbilities",
 			"GeometryCollectionEngine",
-			"Niagara"
+			"Niagara",
+			"UMG"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

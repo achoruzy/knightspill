@@ -44,10 +44,6 @@ void AWeapon::Attach_Implementation(AMainCharacter* Character)
 {
 }
 
-void AWeapon::Collect_Implementation(AMainCharacter* Character)
-{
-}
-
 void AWeapon::SetActive(bool value)
 {
 	// IsEquipped = value;
