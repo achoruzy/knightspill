@@ -209,10 +209,10 @@ bool AMainCharacter::IsBusy() const
 
 void AMainCharacter::AttachWeapon(AWeapon* Weapon)
 {
-	const auto Rules = FAttachmentTransformRules::SnapToTargetIncludingScale;
 	if (!IsWeaponEquipped())
 	{
-		Weapon->AttachToComponent(GetMesh(), Rules, ECharacterSockets::RHandSocket);
+		Weapon->Equip(GetMesh(), this, ECharacterSockets::RHandSocket);
+		
 		ActiveEquipmentState = ECharacterActiveEquipmentState::RightHandWeapon; // TODO: resolve shield option
 		RHandEquipped = Weapon;
 	}

@@ -4,6 +4,8 @@
 #include "Enemy.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Knightspill/Objects/Characters/CharacterAttributesComponent.h"
+#include "Knightspill/UI/Floating/Enemy/CharacterHealthBarComponent.h"
 
 
 AEnemy::AEnemy()
@@ -15,11 +17,17 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+
+	CharacterAttributes = CreateDefaultSubobject<UCharacterAttributesComponent>(TEXT("ArrtibutesComponent"));
+
+	HealthBarComponent = CreateDefaultSubobject<UCharacterHealthBarComponent>(TEXT("HealthBarComponent"));
+	HealthBarComponent->SetupAttachment(RootComponent);
 }
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+	HealthBarComponent->SetHealthPercent(1.f);
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -30,6 +38,19 @@ void AEnemy::Tick(float DeltaTime)
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	CharacterAttributes->ReceiveDamage(DamageAmount);
+	HealthBarComponent->SetHealthPercent(CharacterAttributes->GetHealthPercent());
+	
+	if (!CharacterAttributes->IsAlive())
+	{
+		Die();
+	}
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
 void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal)
@@ -58,4 +79,13 @@ void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamageP
 	{
 		PlayAnimationMontage(HitReactionMontage, FName("HitReactBack"));
 	}
+}
+
+void AEnemy::Die() const
+{
+	PlayAnimationMontage(DeathMontage);
+	HealthBarComponent->SetVisibility(false);
+	// GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	// GetMesh()->SetGenerateOverlapEvents(false);
+	// GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
 }

@@ -2,6 +2,8 @@
 
 
 #include "Weapon.h"
+
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Knightspill/Systems/Interfaces/Hittable.h"
 
@@ -56,6 +58,14 @@ void AWeapon::SetActive(bool value)
 	
 }
 
+void AWeapon::Equip(USceneComponent* Parent, AActor* WeaponOwner, FName SocketName)
+{
+	const auto Rules = FAttachmentTransformRules::SnapToTargetIncludingScale;
+	AttachToComponent(Parent, Rules, SocketName);
+	SetOwner(WeaponOwner);
+	SetInstigator(Cast<APawn>(WeaponOwner));
+}
+
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                            int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -82,6 +92,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	{
 		HittableActor->Execute_GetHit(HitData.GetActor(), Damage, HitData.Location, HitData.Normal);
 		ActorsToIgnore.AddUnique(HitData.GetActor());
+		UGameplayStatics::ApplyDamage(HitData.GetActor(), Damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 	}
 	ApplyForceFields(HitData.Location);
 }

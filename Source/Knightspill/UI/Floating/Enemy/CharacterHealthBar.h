@@ -14,7 +14,11 @@ UCLASS()
 class KNIGHTSPILL_API UCharacterHealthBar : public UUserWidget
 {
 	GENERATED_BODY()
+	
 private:
 	UPROPERTY(meta = (BindWidget, AllowPrivateAccess="true"))
 	UProgressBar* HealthBar;
+
+public:
+	void SetHealthPercent(const float Percent) const;
 };

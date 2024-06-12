@@ -24,8 +24,8 @@ private:
 	// bool IsEquipped;
 
 protected:
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, meta=(AllowPrivateAccess = "true"))
-	int Damage = 0; // TODO: Get out to a component and all other characteristics
+	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess = "true"))
+	int Damage = 35; // TODO: Get out to a component and all other characteristics
 	// TODO: setup weapons to data tables
 
 private:
@@ -46,6 +46,8 @@ public:
 	void SetActive(bool value);
 	UFUNCTION()
 	void ResetActorsToIgnore();
+	UFUNCTION()
+	void Equip(USceneComponent* Parent,	AActor* WeaponOwner, FName SocketName);
 	
 protected:
 	virtual void BeginPlay() override;
