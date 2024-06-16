@@ -6,6 +6,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Knightspill/Objects/Characters/CharacterAttributesComponent.h"
 #include "Knightspill/UI/Floating/Enemy/CharacterHealthBarComponent.h"
+#include "AIController.h"
+#include "Navigation/PathFollowingComponent.h"
 
 
 AEnemy::AEnemy()
@@ -24,10 +26,12 @@ AEnemy::AEnemy()
 	HealthBarComponent->SetupAttachment(RootComponent);
 }
 
+
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	HealthBarComponent->SetHealthPercent(1.f);
+	EnemyController = Cast<AAIController>(GetController());
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -51,6 +55,18 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		Die();
 	}
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void AEnemy::GoToTarget(const AActor* ApproachTarget) const
+{
+	if (EnemyController && ApproachTarget)
+	{
+		FAIMoveRequest MoveRequest;
+		MoveRequest.SetGoalActor(ApproachTarget);
+		MoveRequest.SetAcceptanceRadius(15.f);
+		
+		EnemyController->MoveTo(MoveRequest);
+	}
 }
 
 void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal)
