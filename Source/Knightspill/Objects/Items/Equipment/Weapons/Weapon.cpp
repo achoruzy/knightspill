@@ -15,12 +15,16 @@ AWeapon::AWeapon()
 	
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = StaticMesh;
+	StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	StaticMesh->SetCollisionResponseToChannels(ECollisionResponse::ECR_Ignore);
+	StaticMesh->SetGenerateOverlapEvents(false);
 
 	WeaponBoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponBoxCollider"));
 	WeaponBoxCollider->SetupAttachment(RootComponent);
 	WeaponBoxCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponBoxCollider->SetCollisionResponseToChannels(ECollisionResponse::ECR_Overlap);
 	WeaponBoxCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	WeaponBoxCollider->SetGenerateOverlapEvents(true);
 	
 	HitTraceStart = CreateDefaultSubobject<USceneComponent>(TEXT("HitTraceStart"));
 	HitTraceStart->SetupAttachment(RootComponent);

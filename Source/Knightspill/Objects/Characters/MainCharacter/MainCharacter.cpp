@@ -132,20 +132,14 @@ void AMainCharacter::OnInteract(const FInputActionValue& Value)
 	if (LookAtActor)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Name: %s"), *LookAtActor->GetName());
-		// if (LookAtActor->GetClass()->ImplementsInterface(UCollectible::StaticClass()))
-		// {
-			if (auto collectible = Cast<ICollectible>(LookAtActor))
-			{
-				collectible->Collect_Implementation(this);
-			}
-		// }
-		// else if (LookAtActor->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
-		// {
-			if (auto interactable = Cast<IInteractable>(LookAtActor))
-			{
-				interactable->Interact_Implementation(this);
-			}
-		// }
+		if (auto collectible = Cast<ICollectible>(LookAtActor))
+		{
+			collectible->Collect_Implementation(this);
+		}
+		else if (auto interactable = Cast<IInteractable>(LookAtActor))
+		{
+			interactable->Interact_Implementation(this);
+		}
 	}
 }
 

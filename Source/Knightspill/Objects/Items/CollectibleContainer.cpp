@@ -18,6 +18,7 @@ ACollectibleContainer::ACollectibleContainer()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
+	
 	Vfx = CreateDefaultSubobject<UNiagaraComponent>(TEXT("VFX"));
 	Vfx->SetupAttachment(RootComponent);
 }
@@ -29,6 +30,7 @@ void ACollectibleContainer::BeginPlay()
 	
 	Collider->OnComponentBeginOverlap.AddDynamic(this, &ACollectibleContainer::OnColliderBeginOverlap);
 	Collider->OnComponentEndOverlap.AddDynamic(this, &ACollectibleContainer::OnColliderEndOverlap);
+	Mesh->SetGenerateOverlapEvents(true);
 	
 	if (ItemClass)
 	{
@@ -68,10 +70,8 @@ void ACollectibleContainer::Collect_Implementation(AMainCharacter* Character)
 	Collider->GetOverlappingActors(OverlappedCharacters, AMainCharacter::StaticClass());
 	if (Item && (!OverlappedCharacters.IsEmpty()))
 	{
-	UE_LOG(LogTemp, Warning, TEXT("Collects on: %s"), *GetName());
 		if (Item->GetClass()->ImplementsInterface(UAttachable::StaticClass()))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Collecting %s"), *Item->GetName());
 			if (auto attachable = Cast<AWeapon>(Item))
 			{
 				if (!bHasOwnMesh)
@@ -106,7 +106,6 @@ void ACollectibleContainer::OnColliderBeginOverlap(UPrimitiveComponent* Overlapp
 	if (AMainCharacter* character = Cast<AMainCharacter>(OtherActor))
 	{
 		character->SetCanLookFor(true);
-		UE_LOG(LogTemp, Warning, TEXT("Character got into collider"));
 		ToggleHighlight(true);
 	}
 }
@@ -117,7 +116,6 @@ void ACollectibleContainer::OnColliderEndOverlap(UPrimitiveComponent* Overlapped
 	if (AMainCharacter* character = Cast<AMainCharacter>(OtherActor))
 	{
 		character->SetCanLookFor(false);
-		UE_LOG(LogTemp, Warning, TEXT("Character got out of the collider"));
 		ToggleHighlight(false);
 	}
 }

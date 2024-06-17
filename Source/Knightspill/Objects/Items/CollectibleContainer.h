@@ -29,7 +29,7 @@ private:
 	UStaticMeshComponent* Mesh;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	UMaterialInstance* HighlightOverlayMaterial;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AItem> ItemClass;
 	UPROPERTY()
 	AItem* Item;

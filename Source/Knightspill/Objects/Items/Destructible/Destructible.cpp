@@ -46,6 +46,7 @@ void ADestructible::GetHit_Implementation(const int DamageValue, const FVector& 
 		const int32 Selection = FMath::RandRange(0, SpawnTreasures.Num() - 1);
 		const auto Container = GetWorld()->SpawnActorDeferred<ACollectibleContainer>(ContainerClass, FTransform(GetActorRotation(), GetActorLocation()));
 		Container->SetItem(SpawnTreasures[Selection]);
+		Container->
 		UGameplayStatics::FinishSpawningActor(Container, FTransform(GetActorRotation(), GetActorLocation()));
 	}
 }
