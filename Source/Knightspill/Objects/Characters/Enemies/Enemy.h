@@ -20,6 +20,14 @@ enum class EEnemyLivingStatus : uint8
 	DiedBack
 };
 
+UENUM(BlueprintType)
+enum class EEnemyState : uint8
+{
+	Idle,
+	Patrol,
+	Attack
+};
+
 UCLASS()
 class KNIGHTSPILL_API AEnemy : public ABaseCharacter, public IHittable
 {
@@ -32,16 +40,30 @@ private:
 	UCharacterHealthBarComponent* HealthBarComponent;
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	EEnemyLivingStatus LivingStatus;
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	EEnemyState State;
 	UPROPERTY()
 	ACharacter* Player;
 	UPROPERTY()
 	float DistanceToPlayer;
+	UPROPERTY(EditAnywhere)
+	float TickTime = 0.1f;
 	UPROPERTY()
-	float LastDistanceToPlayer;
+	float TickTimeCurrent;
+	UPROPERTY(EditAnywhere)
+	float ShowHealthBarRadius = 1000.f;
+
+	//** TARGETS */
 	UPROPERTY()
-	float ShowHealthTimeThreshold;
+	AActor* ApproachingTarget;
+	UPROPERTY(EditAnywhere)
+	float ApproachingRadius = 200.f;
 	UPROPERTY()
-	float ShowHealthTimeCurrent;
+	int ApproachingTargetID = -1;
+	UPROPERTY()
+	AActor* AttackingTarget;
+	UPROPERTY(EditAnywhere)
+	float AttackingRadius = 400.f;
 	
 	//** ANIM MONTAGES */
 	UPROPERTY(EditDefaultsOnly, Category="AnimMontages")
@@ -49,7 +71,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="AnimMontages")
 	UAnimMontage* DeathMontage;
 
-	/* AI */
+	//** AI */
 	UPROPERTY(BlueprintReadOnly, Category="Enemy AI", meta=(AllowPrivateAccess="true"))
 	AAIController* EnemyController;
 	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, Category="Enemy AI", meta=(AllowPrivateAccess="true"))
@@ -63,11 +85,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsAlive() const { return CharacterAttributes->IsAlive(); }
 	UFUNCTION(BlueprintCallable)
-	void GoToTarget(const AActor* ApproachTarget) const;
+	void ApproachTarget(const AActor* ApproachTarget) const;
+	void OnApproachCompleted();
 	
 protected:
 	virtual void BeginPlay() override;
 	void SetShowHealthBar();
 	virtual void GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal) override;
 	void Die();
+	AActor* NextApproachingTarget();
 };

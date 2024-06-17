@@ -14,7 +14,7 @@
 
 AEnemy::AEnemy()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	GetMesh()->SetCollisionObjectType(ECC_WorldDynamic);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -28,10 +28,7 @@ AEnemy::AEnemy()
 	HealthBarComponent->SetupAttachment(RootComponent);
 
 	LivingStatus = EEnemyLivingStatus::Lives;
-	
-	ShowHealthTimeThreshold = 1 / 30;
 }
-
 
 void AEnemy::BeginPlay()
 {
@@ -44,21 +41,48 @@ void AEnemy::BeginPlay()
 
 	DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
 
-	if (PatrolTargets.Num() > 0)
-	{
-		GoToTarget(PatrolTargets[0]);
-	}
+	ApproachingTarget = NextApproachingTarget();
+	ApproachTarget(ApproachingTarget);
+	State = EEnemyState::Patrol;
 }
 
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	ShowHealthTimeCurrent += DeltaTime;
+	if (LivingStatus != EEnemyLivingStatus::Lives) return;
+	TickTimeCurrent += DeltaTime;
 
-	if (ShowHealthTimeCurrent > ShowHealthTimeThreshold)
+	if (TickTimeCurrent > TickTime)
 	{
+		TickTimeCurrent = 0.f;
+		DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
 		SetShowHealthBar();
-		ShowHealthTimeCurrent = 0.f;
+		
+		if (DistanceToPlayer < AttackingRadius && State != EEnemyState::Attack)
+		{
+			AttackingTarget = Player;
+			State = EEnemyState::Attack;
+			ApproachTarget(AttackingTarget);
+			return;
+		}
+		// else
+		// {
+		// 	State = EEnemyState::Patrol;
+		// }
+		
+		// if (State == EEnemyState::Idle && PatrolTargets.Num() > 0)
+		// {
+		// 	State = EEnemyState::Patrol;
+		// 	ApproachTarget(ApproachingTarget);
+		// }
+		
+		// if (State == EEnemyState::Patrol && FVector::Dist(GetActorLocation(), ApproachingTarget->GetActorLocation()) < ApproachingRadius)
+		// {
+		// 	// AttackingTarget = nullptr;
+		// 	ApproachingTarget = NextApproachingTarget();
+		// 	ApproachTarget(ApproachingTarget);
+		// }
+		
 	}
 }
 
@@ -69,8 +93,7 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AEnemy::SetShowHealthBar()
 {
-	DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
-	if (DistanceToPlayer < 1000)
+	if (DistanceToPlayer < ShowHealthBarRadius)
 	{
 		HealthBarComponent->SetVisibility(true);
 	}
@@ -93,24 +116,27 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
-void AEnemy::GoToTarget(const AActor* ApproachTarget) const
+void AEnemy::ApproachTarget(const AActor* ApproachTarget) const
 {
 	if (EnemyController && ApproachTarget)
 	{
 		FAIMoveRequest MoveRequest;
 		MoveRequest.SetGoalActor(ApproachTarget);
-		MoveRequest.SetAcceptanceRadius(15.f);
+		MoveRequest.SetAcceptanceRadius(100.f);
 		FNavPathSharedPtr NavPath;
 		EnemyController->MoveTo(MoveRequest, &NavPath);
+		// EnemyController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(this, &AEnemy::OnApproachCompleted);
 
 		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
 		for (auto& Point : PathPoints)
 		{
 			const FVector& Location = Point.Location;
-			DrawDebugSphere(GetWorld(), Location, 150.f, 24, FColor::Orange, false, 10);
+			DrawDebugSphere(GetWorld(), Location, 50.f, 12, FColor::Orange, false, 10);
 		}
 	}
 }
+
+
 
 void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal)
 {
@@ -162,4 +188,20 @@ void AEnemy::Die()
 	// GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
 	// GetMesh()->SetGenerateOverlapEvents(false);
 	// GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+}
+
+AActor* AEnemy::NextApproachingTarget()
+{
+	if (PatrolTargets.Num() > 0)
+	{
+		ApproachingTargetID++;
+		if (ApproachingTargetID == PatrolTargets.Num()) ApproachingTargetID = 0;
+		return PatrolTargets[ApproachingTargetID];
+	}
+	return this;
+}
+
+void AEnemy::OnApproachCompleted()
+{
+	
 }
