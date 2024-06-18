@@ -12,6 +12,7 @@
 #include "NavMesh/NavMeshPath.h"
 
 
+
 AEnemy::AEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -41,9 +42,7 @@ void AEnemy::BeginPlay()
 
 	DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
 
-	ApproachingTarget = NextApproachingTarget();
-	ApproachTarget(ApproachingTarget);
-	State = EEnemyState::Patrol;
+	CombatTarget = Player;
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -57,32 +56,39 @@ void AEnemy::Tick(float DeltaTime)
 		TickTimeCurrent = 0.f;
 		DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
 		SetShowHealthBar();
-		
-		if (DistanceToPlayer < AttackingRadius && State != EEnemyState::Attack)
+
+		if (State == EEnemyState::Wait) return;
+		if (DistanceToPlayer < CombatApproachRadius)
 		{
-			AttackingTarget = Player;
 			State = EEnemyState::Attack;
-			ApproachTarget(AttackingTarget);
-			return;
 		}
-		// else
-		// {
-		// 	State = EEnemyState::Patrol;
-		// }
-		
-		// if (State == EEnemyState::Idle && PatrolTargets.Num() > 0)
-		// {
-		// 	State = EEnemyState::Patrol;
-		// 	ApproachTarget(ApproachingTarget);
-		// }
-		
-		// if (State == EEnemyState::Patrol && FVector::Dist(GetActorLocation(), ApproachingTarget->GetActorLocation()) < ApproachingRadius)
-		// {
-		// 	// AttackingTarget = nullptr;
-		// 	ApproachingTarget = NextApproachingTarget();
-		// 	ApproachTarget(ApproachingTarget);
-		// }
-		
+
+		if (State == EEnemyState::Attack)
+		{
+			if (DistanceToPlayer < CombatActionRadius)
+			{
+				State = EEnemyState::Wait;
+				GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::OnAttackTimerFinished, 2.f);
+			}
+			else
+			{
+				State = EEnemyState::Patrol;
+				PatrolPosition = CombatTarget->GetActorLocation();
+				ApproachLocation(PatrolPosition);
+			}
+		}
+		else if (State == EEnemyState::Idle && PatrolTargets.Num() > 0)
+		{
+			State = EEnemyState::Patrol;
+			PatrolTarget = NextPatrolTarget();
+			PatrolPosition = PatrolTarget->GetActorLocation();
+			ApproachLocation(PatrolPosition);
+		}
+		else if (State == EEnemyState::Patrol && FVector::Dist(GetActorLocation(), PatrolPosition) < PatrolApproachRadius)
+		{
+			State = EEnemyState::Wait;
+			GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::OnPatrolTimerFinished, 3.f);
+		}
 	}
 }
 
@@ -91,16 +97,22 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void AEnemy::OnPatrolTimerFinished()
+{
+	State = EEnemyState::Idle;
+}
+
+void AEnemy::OnAttackTimerFinished()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Enemy is attacking!"));
+	// Do attack logic here
+	State = EEnemyState::Idle;
+}
+
 void AEnemy::SetShowHealthBar()
 {
-	if (DistanceToPlayer < ShowHealthBarRadius)
-	{
-		HealthBarComponent->SetVisibility(true);
-	}
-	else
-	{
-		HealthBarComponent->SetVisibility(false);
-	}
+	if (DistanceToPlayer < ShowHealthBarRadius) HealthBarComponent->SetVisibility(true);
+	else HealthBarComponent->SetVisibility(false);
 }
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -116,12 +128,20 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
-void AEnemy::ApproachTarget(const AActor* ApproachTarget) const
+void AEnemy::ApproachActor(const AActor* ApproachTarget) const
 {
-	if (EnemyController && ApproachTarget)
+	if (ApproachTarget)
+	{
+		ApproachLocation(ApproachTarget->GetActorLocation());
+	}
+}
+
+void AEnemy::ApproachLocation(const FVector ApproachLocation) const
+{
+	if (EnemyController)
 	{
 		FAIMoveRequest MoveRequest;
-		MoveRequest.SetGoalActor(ApproachTarget);
+		MoveRequest.SetGoalLocation(ApproachLocation);
 		MoveRequest.SetAcceptanceRadius(100.f);
 		FNavPathSharedPtr NavPath;
 		EnemyController->MoveTo(MoveRequest, &NavPath);
@@ -135,7 +155,6 @@ void AEnemy::ApproachTarget(const AActor* ApproachTarget) const
 		}
 	}
 }
-
 
 
 void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal)
@@ -190,15 +209,15 @@ void AEnemy::Die()
 	// GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
 }
 
-AActor* AEnemy::NextApproachingTarget()
+AActor* AEnemy::NextPatrolTarget()
 {
 	if (PatrolTargets.Num() > 0)
 	{
-		ApproachingTargetID++;
-		if (ApproachingTargetID == PatrolTargets.Num()) ApproachingTargetID = 0;
-		return PatrolTargets[ApproachingTargetID];
+		PatrolTargetID++;
+		if (PatrolTargetID == PatrolTargets.Num()) PatrolTargetID = 0;
+		return PatrolTargets[PatrolTargetID];
 	}
-	return this;
+	return nullptr;
 }
 
 void AEnemy::OnApproachCompleted()

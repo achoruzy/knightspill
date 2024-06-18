@@ -24,6 +24,7 @@ UENUM(BlueprintType)
 enum class EEnemyState : uint8
 {
 	Idle,
+	Wait,
 	Patrol,
 	Attack
 };
@@ -53,28 +54,39 @@ private:
 	UPROPERTY(EditAnywhere)
 	float ShowHealthBarRadius = 1000.f;
 
+	//** TIMERS */
+	FTimerHandle PatrolTimer;
+	void OnPatrolTimerFinished();
+	FTimerHandle AttackTimer;
+	void OnAttackTimerFinished();
+
 	//** TARGETS */
 	UPROPERTY()
-	AActor* ApproachingTarget;
-	UPROPERTY(EditAnywhere)
-	float ApproachingRadius = 200.f;
+	AActor* PatrolTarget;
+	UPROPERTY(EditAnywhere, Category="! Targets")
+	float PatrolApproachRadius = 200.f;
 	UPROPERTY()
-	int ApproachingTargetID = -1;
+	int PatrolTargetID = -1;
 	UPROPERTY()
-	AActor* AttackingTarget;
-	UPROPERTY(EditAnywhere)
-	float AttackingRadius = 400.f;
+	
+	AActor* CombatTarget;
+	UPROPERTY(EditAnywhere, Category="! Targets")
+	float CombatApproachRadius = 400.f;
+	UPROPERTY(EditAnywhere, Category="! Targets")
+	float CombatActionRadius = 150.f;
+	UPROPERTY()
+	FVector PatrolPosition;
 	
 	//** ANIM MONTAGES */
-	UPROPERTY(EditDefaultsOnly, Category="AnimMontages")
+	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
 	UAnimMontage* HitReactionMontage;
-	UPROPERTY(EditDefaultsOnly, Category="AnimMontages")
+	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
 	UAnimMontage* DeathMontage;
 
 	//** AI */
-	UPROPERTY(BlueprintReadOnly, Category="Enemy AI", meta=(AllowPrivateAccess="true"))
+	UPROPERTY(BlueprintReadOnly, Category="! Enemy AI", meta=(AllowPrivateAccess="true"))
 	AAIController* EnemyController;
-	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, Category="Enemy AI", meta=(AllowPrivateAccess="true"))
+	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, Category="! Enemy AI", meta=(AllowPrivateAccess="true"))
 	TArray<AActor*> PatrolTargets;
 	
 public:
@@ -85,7 +97,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsAlive() const { return CharacterAttributes->IsAlive(); }
 	UFUNCTION(BlueprintCallable)
-	void ApproachTarget(const AActor* ApproachTarget) const;
+	void ApproachActor(const AActor* ApproachTarget) const;
+	UFUNCTION(BlueprintCallable)
+	void ApproachLocation(const FVector ApproachLocation) const;
 	void OnApproachCompleted();
 	
 protected:
@@ -93,5 +107,5 @@ protected:
 	void SetShowHealthBar();
 	virtual void GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal) override;
 	void Die();
-	AActor* NextApproachingTarget();
+	AActor* NextPatrolTarget();
 };
