@@ -41,6 +41,7 @@ AMainCharacter::AMainCharacter()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	Tags.Add(FName("MainCharacter"));
 
 	bIsLookingFor = false;
 	ActiveEquipmentState = ECharacterActiveEquipmentState::Unequipped;

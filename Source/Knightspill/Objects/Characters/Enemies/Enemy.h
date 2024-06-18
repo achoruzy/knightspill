@@ -8,6 +8,9 @@
 #include "Knightspill/Systems/Interfaces/Hittable.h"
 #include "Enemy.generated.h"
 
+struct FPathFollowingResult;
+struct FAIRequestID;
+class UPawnSensingComponent;
 class AAIController;
 class UCharacterAttributesComponent;
 class UCharacterHealthBarComponent;
@@ -26,6 +29,7 @@ enum class EEnemyState : uint8
 	Idle,
 	Wait,
 	Patrol,
+	Chase,
 	Attack
 };
 
@@ -35,22 +39,22 @@ class KNIGHTSPILL_API AEnemy : public ABaseCharacter, public IHittable
 	GENERATED_BODY()
 
 private:
+	UPROPERTY(VisibleAnywhere)
+	UPawnSensingComponent* SensingComponent;
 	UPROPERTY(EditDefaultsOnly)
 	UCharacterAttributesComponent* CharacterAttributes;
 	UPROPERTY(EditDefaultsOnly)
 	UCharacterHealthBarComponent* HealthBarComponent;
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	EEnemyLivingStatus LivingStatus;
-	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
-	EEnemyState State;
 	UPROPERTY()
 	ACharacter* Player;
 	UPROPERTY()
 	float DistanceToPlayer;
 	UPROPERTY(EditAnywhere)
-	float TickTime = 0.1f;
+	float TickInterval = 0.3f;
 	UPROPERTY()
-	float TickTimeCurrent;
+	float TickIntervalCurrent;
 	UPROPERTY(EditAnywhere)
 	float ShowHealthBarRadius = 1000.f;
 
@@ -85,6 +89,8 @@ private:
 
 	//** AI */
 	UPROPERTY(BlueprintReadOnly, Category="! Enemy AI", meta=(AllowPrivateAccess="true"))
+	EEnemyState State;
+	UPROPERTY(BlueprintReadOnly, Category="! Enemy AI", meta=(AllowPrivateAccess="true"))
 	AAIController* EnemyController;
 	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, Category="! Enemy AI", meta=(AllowPrivateAccess="true"))
 	TArray<AActor*> PatrolTargets;
@@ -100,7 +106,7 @@ public:
 	void ApproachActor(const AActor* ApproachTarget) const;
 	UFUNCTION(BlueprintCallable)
 	void ApproachLocation(const FVector ApproachLocation) const;
-	void OnApproachCompleted();
+	void OnApproachCompleted(FAIRequestID ID, const FPathFollowingResult& Result) const;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -108,4 +114,6 @@ protected:
 	virtual void GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal) override;
 	void Die();
 	AActor* NextPatrolTarget();
+	UFUNCTION()
+	void OnPawnSeen(APawn* Pawn);
 };

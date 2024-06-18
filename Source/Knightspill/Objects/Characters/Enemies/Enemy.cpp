@@ -10,7 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "NavMesh/NavMeshPath.h"
-
+#include "Perception/PawnSensingComponent.h"
 
 
 AEnemy::AEnemy()
@@ -22,6 +22,8 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+
+	SensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("SensingComponent"));
 
 	CharacterAttributes = CreateDefaultSubobject<UCharacterAttributesComponent>(TEXT("ArrtibutesComponent"));
 
@@ -36,6 +38,9 @@ void AEnemy::BeginPlay()
 	Super::BeginPlay();
 	Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	EnemyController = Cast<AAIController>(GetController());
+	// EnemyController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(this, &AEnemy::OnApproachCompleted);
+
+	SensingComponent->OnSeePawn.AddDynamic(this, &AEnemy::OnPawnSeen);
 	
 	HealthBarComponent->SetHealthPercent(1.f);
 	HealthBarComponent->SetVisibility(false);
@@ -49,30 +54,34 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (LivingStatus != EEnemyLivingStatus::Lives) return;
-	TickTimeCurrent += DeltaTime;
+	TickIntervalCurrent += DeltaTime;
 
-	if (TickTimeCurrent > TickTime)
+	if (TickIntervalCurrent > TickInterval)
 	{
-		TickTimeCurrent = 0.f;
+		TickIntervalCurrent = 0.f;
 		DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
 		SetShowHealthBar();
 
 		if (State == EEnemyState::Wait) return;
 		if (DistanceToPlayer < CombatApproachRadius)
 		{
-			State = EEnemyState::Attack;
+			if (State == EEnemyState::Patrol) EnemyController->StopMovement();
+			State = EEnemyState::Chase;
+		}
+		else if (State != EEnemyState::Patrol)
+		{
+			State = EEnemyState::Idle;
 		}
 
-		if (State == EEnemyState::Attack)
+		if (State == EEnemyState::Chase)
 		{
 			if (DistanceToPlayer < CombatActionRadius)
 			{
 				State = EEnemyState::Wait;
-				GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::OnAttackTimerFinished, 2.f);
+				GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::OnAttackTimerFinished, 2.f);
 			}
 			else
 			{
-				State = EEnemyState::Patrol;
 				PatrolPosition = CombatTarget->GetActorLocation();
 				ApproachLocation(PatrolPosition);
 			}
@@ -99,12 +108,14 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AEnemy::OnPatrolTimerFinished()
 {
+	GetWorldTimerManager().ClearTimer(PatrolTimer);
 	State = EEnemyState::Idle;
 }
 
 void AEnemy::OnAttackTimerFinished()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Enemy is attacking!"));
+	GetWorldTimerManager().ClearTimer(AttackTimer);
 	// Do attack logic here
 	State = EEnemyState::Idle;
 }
@@ -145,7 +156,6 @@ void AEnemy::ApproachLocation(const FVector ApproachLocation) const
 		MoveRequest.SetAcceptanceRadius(100.f);
 		FNavPathSharedPtr NavPath;
 		EnemyController->MoveTo(MoveRequest, &NavPath);
-		// EnemyController->GetPathFollowingComponent()->OnRequestFinished.AddUObject(this, &AEnemy::OnApproachCompleted);
 
 		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
 		for (auto& Point : PathPoints)
@@ -204,9 +214,10 @@ void AEnemy::Die()
 	}
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	HealthBarComponent->SetVisibility(false);
-	// GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
-	// GetMesh()->SetGenerateOverlapEvents(false);
-	// GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SensingComponent->SetActive(false);
+	GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	GetMesh()->SetGenerateOverlapEvents(false);
 }
 
 AActor* AEnemy::NextPatrolTarget()
@@ -220,7 +231,15 @@ AActor* AEnemy::NextPatrolTarget()
 	return nullptr;
 }
 
-void AEnemy::OnApproachCompleted()
+void AEnemy::OnPawnSeen(APawn* Pawn)
 {
-	
+	if (Pawn->ActorHasTag(FName("MainCharacter")))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s seen!"), *Pawn->GetName());
+	}
+}
+
+void AEnemy::OnApproachCompleted(FAIRequestID ID, const FPathFollowingResult& Result) const
+{
+	UE_LOG(LogTemp, Warning, TEXT("Approaching completed"));
 }
