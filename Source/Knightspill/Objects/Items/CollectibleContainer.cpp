@@ -105,7 +105,7 @@ void ACollectibleContainer::OnColliderBeginOverlap(UPrimitiveComponent* Overlapp
 {
 	if (AMainCharacter* character = Cast<AMainCharacter>(OtherActor))
 	{
-		character->SetCanLookFor(true);
+		character->SetCanTrace(true);
 		ToggleHighlight(true);
 	}
 }
@@ -115,7 +115,7 @@ void ACollectibleContainer::OnColliderEndOverlap(UPrimitiveComponent* Overlapped
 {
 	if (AMainCharacter* character = Cast<AMainCharacter>(OtherActor))
 	{
-		character->SetCanLookFor(false);
+		character->SetCanTrace(false);
 		ToggleHighlight(false);
 	}
 }

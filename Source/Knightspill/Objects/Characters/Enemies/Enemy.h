@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Knightspill/Game/EngineClassExtensions/BaseCharacter.h"
 #include "Knightspill/Objects/Characters/CharacterAttributesComponent.h"
+#include "Knightspill/Objects/Characters/DefaultCharacter.h"
 #include "Knightspill/Systems/Interfaces/Hittable.h"
 #include "Enemy.generated.h"
 
@@ -39,7 +40,7 @@ struct FEnemyAttackMontageTitles
 };
 
 UCLASS()
-class KNIGHTSPILL_API AEnemy : public ABaseCharacter, public IHittable
+class KNIGHTSPILL_API AEnemy : public ADefaultCharacter
 {
 	GENERATED_BODY()
 
@@ -87,14 +88,6 @@ private:
 	float CombatActionRadius = 150.f;
 	UPROPERTY()
 	FVector PatrolPosition;
-	
-	//** ANIM MONTAGES */
-	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
-	UAnimMontage* HitReactionMontage;
-	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
-	UAnimMontage* DeathMontage;
-	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
-	UAnimMontage* AttackMontage;
 
 	//** AI */
 	UPROPERTY(BlueprintReadOnly, Category="! Enemy AI", meta=(AllowPrivateAccess="true"))
@@ -116,8 +109,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApproachLocation(const FVector ApproachLocation) const;
 	void OnApproachCompleted(FAIRequestID ID, const FPathFollowingResult& Result) const;
-	UFUNCTION(BlueprintCallable)
-	void SetIdleState() { State = EEnemyState::Idle; }
+	virtual void ResetState() override { State = EEnemyState::Idle; }
+
 	
 protected:
 	virtual void BeginPlay() override;

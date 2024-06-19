@@ -27,7 +27,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category="Movement")
 	bool IsFalling = false;
 	UPROPERTY(BlueprintReadOnly, Category="Movement")
-	ECharacterActiveEquipmentState ActiveEquipmentState;
+	ECharacterWeaponState ActiveEquipmentState;
 	
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;

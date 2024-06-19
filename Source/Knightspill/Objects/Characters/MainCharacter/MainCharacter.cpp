@@ -10,9 +10,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Knightspill/Systems/Interfaces/Collectible.h"
 #include "Knightspill/Systems/Interfaces/Interactable.h"
-#include "Knightspill/Objects/Items/Item.h"
 #include "Knightspill/Objects/Items/Equipment/Weapons/Weapon.h"
 #include "Animation/AnimMontage.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+
 
 AMainCharacter::AMainCharacter()
 {
@@ -37,36 +39,21 @@ AMainCharacter::AMainCharacter()
 	MovementComponent->bUseControllerDesiredRotation = true;
 }
 
-
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Tags.Add(FName("MainCharacter"));
+	Tags.Add(FName("EnemyHittable"));
 
-	bIsLookingFor = false;
-	ActiveEquipmentState = ECharacterActiveEquipmentState::Unequipped;
-	ActionState = ECharacterActionState::Unoccupied;
+	bCanTrace = false;
+	WeaponState = ECharacterWeaponState::Unequipped;
+	State = ECharacterActionState::Unoccupied;
 }
-
 
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Trace line for looking at actor
-	if (bIsLookingFor)
-	{
-		FHitResult Hit;
-		FVector TraceStart = Camera->GetComponentLocation();
-		FVector TraceEnd = Camera->GetComponentLocation() + Camera->GetForwardVector() * 400.f;
-		FCollisionQueryParams QueryParams; // TODO: get these 3 lines out
-		QueryParams.AddIgnoredActor(this);
-		QueryParams.MobilityType = EQueryMobilityType::Static;
-		GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
-		if (Hit.bBlockingHit && IsValid(Hit.GetActor())) LookAtActor = Hit.GetActor();
-		else LookAtActor = nullptr;
-		DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, -1, 0, 0.1f);
-	}
+	if (bCanTrace) TraceLine();
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -94,6 +81,88 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Input->BindAction(InputInterface->AttackLight, ETriggerEvent::Triggered, this, &AMainCharacter::OnAttackLight);
 }
 
+bool AMainCharacter::IsWeaponEquipped() const
+{
+	if (WeaponState != ECharacterWeaponState::Unequipped) return true;
+	return false;
+}
+
+bool AMainCharacter::IsBusy() const
+{
+	if (State == ECharacterActionState::Unoccupied) return false;
+	return true;
+}
+
+void AMainCharacter::AttachWeapon(AWeapon* Weapon)
+{
+	if (!IsWeaponEquipped())
+	{
+		Weapon->Equip(GetMesh(), this, FCharacterSockets::RHandSocket);
+		
+		WeaponState = ECharacterWeaponState::Equipped;
+		WeaponEquipped = Weapon;
+	}
+}
+
+void AMainCharacter::CollectItem(AItem* Item)
+{
+	CollectedItems.Add(Item);
+}
+
+void AMainCharacter::SetCanTrace(const bool CanTrace)
+{
+	bCanTrace = CanTrace;
+	if (!bCanTrace) SeenInteractable = nullptr;
+}
+
+void AMainCharacter::TraceLine()
+{
+	FVector TraceStart = Camera->GetComponentLocation();
+	FVector TraceEnd = Camera->GetComponentLocation() + Camera->GetForwardVector() * 400.f;
+	
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.MobilityType = EQueryMobilityType::Static;
+	
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+	
+	if (Hit.bBlockingHit && IsValid(Hit.GetActor()))
+	{
+		SeenInteractable = Hit.GetActor();
+	}
+	else
+	{
+		SeenInteractable = nullptr;
+	}
+	// DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, -1, 0, 0.1f);
+}
+
+bool AMainCharacter::CanAttack() const
+{
+	return !IsBusy() && IsWeaponEquipped();
+}
+
+void AMainCharacter::ArmWeapon()
+{
+	if (WeaponEquipped)
+	{
+		WeaponEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RHandSocket"));
+		WeaponEquipped->SetActive(true);
+		WeaponState = ECharacterWeaponState::Equipped;
+	}
+}
+
+void AMainCharacter::DisarmWeapon()
+{
+	if (WeaponEquipped)
+	{
+		WeaponEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("SwordSlotBack"));
+		WeaponEquipped->SetActive(false);
+		WeaponState = ECharacterWeaponState::Unequipped;
+	}
+}
+
 void AMainCharacter::OnMoveForward(const FInputActionValue& Value)
 {
 	if (const float Val = Value.Get<float>(); Val != 0.0)
@@ -118,8 +187,8 @@ void AMainCharacter::OnLook(const FInputActionValue& Value)
 {
 	if (const FVector2D Val = Value.Get<FVector2D>(); !Val.IsZero())
 	{
-	AddControllerPitchInput(-Val.Y);
-	AddControllerYawInput(Val.X);
+		AddControllerPitchInput(-Val.Y);
+		AddControllerYawInput(Val.X);
 	}
 }
 
@@ -130,13 +199,13 @@ void AMainCharacter::OnJump(const FInputActionValue& Value)
 
 void AMainCharacter::OnInteract(const FInputActionValue& Value)
 {
-	if (LookAtActor)
+	if (SeenInteractable)
 	{
-		if (auto collectible = Cast<ICollectible>(LookAtActor))
+		if (auto collectible = Cast<ICollectible>(SeenInteractable))
 		{
 			collectible->Collect_Implementation(this);
 		}
-		else if (auto interactable = Cast<IInteractable>(LookAtActor))
+		else if (auto interactable = Cast<IInteractable>(SeenInteractable))
 		{
 			interactable->Interact_Implementation(this);
 		}
@@ -149,89 +218,22 @@ void AMainCharacter::OnWeaponEquip(const FInputActionValue& Value)
 	{
 		if (IsWeaponEquipped())
 		{
-			ActionState = ECharacterActionState::Animating;
+			State = ECharacterActionState::Animating;
 			PlayAnimationMontage(WeaponEquipMontage, FName("Unequip"));
 		}
 		else
 		{
-			ActionState = ECharacterActionState::Animating;
+			State = ECharacterActionState::Animating;
 			PlayAnimationMontage(WeaponEquipMontage, FName("Equip"));
 		}
 	}
 }
 
-void AMainCharacter::ArmWeapon()
-{
-	if (RHandEquipped)
-	{
-		RHandEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RHandSocket"));
-		RHandEquipped->SetActive(true);
-		ActiveEquipmentState = ECharacterActiveEquipmentState::RightHandWeapon;
-	}
-}
-
-void AMainCharacter::DisarmWeapon()
-{
-	if (RHandEquipped)
-	{
-		RHandEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("SwordSlotBack"));
-		RHandEquipped->SetActive(false);
-		ActiveEquipmentState = ECharacterActiveEquipmentState::Unequipped;
-	}
-}
-
 void AMainCharacter::OnAttackLight(const FInputActionValue& Value)
 {
-	if (!IsBusy() && IsWeaponEquipped())
+	if (CanAttack())
 	{
-		ActionState = ECharacterActionState::Attacking;
+		State = ECharacterActionState::Attacking;
 		PlayAnimationMontage(AttackMontage);
-	}
-}
-
-bool AMainCharacter::IsWeaponEquipped() const
-{
-	if (ActiveEquipmentState != ECharacterActiveEquipmentState::Unequipped) return true; // TODO: actually to think about shield
-	return false;
-}
-
-bool AMainCharacter::IsBusy() const
-{
-	if (ActionState == ECharacterActionState::Unoccupied) return false;
-	return true;
-}
-
-void AMainCharacter::AttachWeapon(AWeapon* Weapon)
-{
-	if (!IsWeaponEquipped())
-	{
-		Weapon->Equip(GetMesh(), this, FCharacterSockets::RHandSocket);
-		
-		ActiveEquipmentState = ECharacterActiveEquipmentState::RightHandWeapon; // TODO: resolve shield option
-		RHandEquipped = Weapon;
-	}
-}
-
-void AMainCharacter::CollectItem(AItem* Item)
-{
-	CollectedItems.Add(Item);
-}
-
-void AMainCharacter::SetCanLookFor(bool var)
-{
-	bIsLookingFor = var;
-	if (!bIsLookingFor) LookAtActor = nullptr;
-}
-void AMainCharacter::StartDamaging()
-{
-	RHandEquipped->SetActive(true);
-}
-
-void AMainCharacter::StopDamaging()
-{
-	RHandEquipped->SetActive(false);
-	if (AWeapon* Weapon = Cast<AWeapon>(RHandEquipped))
-	{
-		Weapon->ResetActorsToIgnore();
 	}
 }

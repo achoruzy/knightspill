@@ -238,7 +238,7 @@ AActor* AEnemy::NextPatrolTarget()
 
 void AEnemy::OnPawnSeen(APawn* Pawn)
 {
-	if (Pawn->ActorHasTag(FName("MainCharacter")))
+	if (Pawn->ActorHasTag(FName("EnemyHittable")))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s seen!"), *Pawn->GetName());
 	}

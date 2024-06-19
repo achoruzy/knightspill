@@ -6,12 +6,10 @@
 #include "MainCharacterEnums.generated.h"
 
 UENUM(BlueprintType)
-enum class ECharacterActiveEquipmentState : uint8
+enum class ECharacterWeaponState : uint8
 {
 	Unequipped,
-	RightHandWeapon,
-	Shield,
-	RightHandWeaponAndShield
+	Equipped,
 };
 
 UENUM(BlueprintType)

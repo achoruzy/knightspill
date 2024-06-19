@@ -5,13 +5,12 @@
 #include <string>
 
 #include "CoreMinimal.h"
-#include "InputActionValue.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "Knightspill/Game/EngineClassExtensions/BaseCharacter.h"
+#include "Knightspill/Objects/Characters/DefaultCharacter.h"
 #include "Knightspill/Objects/Characters/MainCharacter/MainCharacterEnums.h"
 #include "MainCharacter.generated.h"
 
+class UCameraComponent;
+class USpringArmComponent;
 class AItem;
 class AWeapon;
 class UInputInterfaceGeneral;
@@ -25,46 +24,36 @@ struct FCharacterSockets
 };
 
 UCLASS()
-class KNIGHTSPILL_API AMainCharacter : public ABaseCharacter
+class KNIGHTSPILL_API AMainCharacter : public ADefaultCharacter
 {
 	GENERATED_BODY()
 
-public:
-	bool bIsLookingFor;
-
 private:
-	UPROPERTY()
-	AActor* LookAtActor;
-	UPROPERTY()
-	AWeapon* RHandEquipped;
-	TArray<AItem*> CollectedItems;
-
-	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	ECharacterActiveEquipmentState ActiveEquipmentState;
-	UPROPERTY(BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
-	ECharacterActionState ActionState;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly)
 	USpringArmComponent* SpringArm;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly)
 	UCameraComponent* Camera;
 	
-	UPROPERTY(EditAnywhere, Category="Input", meta = (DisplayPriority = 0))
+	UPROPERTY(EditAnywhere, Category="! Input")
 	UInputInterfaceGeneral* InputInterface;
-	UPROPERTY(EditAnywhere, Category="Input", meta = (DisplayPriority = 1))
+	UPROPERTY(EditAnywhere, Category="! Input")
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
+	
+	TArray<AItem*> CollectedItems; // TODO: Refactor to backpack component
+	UPROPERTY()
+	AActor* SeenInteractable;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"), Category="! States")
+	ECharacterWeaponState WeaponState;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"), Category="! States")
+	ECharacterActionState State;
+	
+	bool bCanTrace;
+	
 	//** ANIM MONTAGES */
-	UPROPERTY(EditDefaultsOnly, Category="AnimMontages")
-	UAnimMontage* AttackMontage;
-	UPROPERTY(EditDefaultsOnly, Category="AnimMontages")
+	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
 	UAnimMontage* WeaponEquipMontage;
 
-	UFUNCTION(BlueprintCallable, Meta = (AllowPrivateAccess = "true"))
-	void ArmWeapon();
-	UFUNCTION(BlueprintCallable, Meta = (AllowPrivateAccess = "true"))
-	void DisarmWeapon();
-	
 public:
 	AMainCharacter();
 	virtual void Tick(float DeltaTime) override;
@@ -76,27 +65,29 @@ public:
 	bool IsBusy() const;
 	void AttachWeapon(AWeapon* Weapon);
 	void CollectItem(AItem* Item);
-	void SetCanLookFor(bool var);
+	void SetCanTrace(bool CanTrace);
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE ECharacterActiveEquipmentState GetActiveEquipmentState() const { return ActiveEquipmentState; }
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE void ResetActionState() { ActionState = ECharacterActionState::Unoccupied; }
-	UFUNCTION(BlueprintCallable)
-	void StartDamaging();
-	UFUNCTION(BlueprintCallable)
-	void StopDamaging();
+	FORCEINLINE ECharacterWeaponState GetWeaponState() const { return WeaponState; }
+	virtual void ResetState() override { State = ECharacterActionState::Unoccupied; }
 	
 protected:
 	virtual void BeginPlay() override;
 
 private:
+	void TraceLine();
+	bool CanAttack() const;
+	UFUNCTION(BlueprintCallable, Meta = (AllowPrivateAccess = "true"))
+	void ArmWeapon();
+	UFUNCTION(BlueprintCallable, Meta = (AllowPrivateAccess = "true"))
+	void DisarmWeapon();
+	/** Input */
 	void OnMoveForward(const FInputActionValue& Value);
 	void OnMoveSide(const FInputActionValue& Value);
 	void OnLook(const FInputActionValue& Value);
 	void OnJump(const FInputActionValue& Value);
 	void OnInteract(const FInputActionValue& Value);
+	/** Anim callbacks */
 	void OnWeaponEquip(const FInputActionValue& Value);
-	
 	void OnAttackLight(const FInputActionValue& Value);
 };
