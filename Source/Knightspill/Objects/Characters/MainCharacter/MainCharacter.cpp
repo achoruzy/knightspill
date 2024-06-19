@@ -132,7 +132,6 @@ void AMainCharacter::OnInteract(const FInputActionValue& Value)
 {
 	if (LookAtActor)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Name: %s"), *LookAtActor->GetName());
 		if (auto collectible = Cast<ICollectible>(LookAtActor))
 		{
 			collectible->Collect_Implementation(this);
@@ -206,7 +205,7 @@ void AMainCharacter::AttachWeapon(AWeapon* Weapon)
 {
 	if (!IsWeaponEquipped())
 	{
-		Weapon->Equip(GetMesh(), this, ECharacterSockets::RHandSocket);
+		Weapon->Equip(GetMesh(), this, FCharacterSockets::RHandSocket);
 		
 		ActiveEquipmentState = ECharacterActiveEquipmentState::RightHandWeapon; // TODO: resolve shield option
 		RHandEquipped = Weapon;

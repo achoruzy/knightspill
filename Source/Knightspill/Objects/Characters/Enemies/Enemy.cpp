@@ -55,6 +55,7 @@ void AEnemy::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (LivingStatus != EEnemyLivingStatus::Lives) return;
 	TickIntervalCurrent += DeltaTime;
+	AttackIntervalCurrent += DeltaTime;
 
 	if (TickIntervalCurrent > TickInterval)
 	{
@@ -62,38 +63,44 @@ void AEnemy::Tick(float DeltaTime)
 		DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
 		SetShowHealthBar();
 
-		if (State == EEnemyState::Wait) return;
 		if (DistanceToPlayer < CombatApproachRadius)
 		{
-			if (State == EEnemyState::Patrol) EnemyController->StopMovement();
 			State = EEnemyState::Chase;
 		}
-		else if (State != EEnemyState::Patrol)
-		{
-			State = EEnemyState::Idle;
-		}
+		if (State == EEnemyState::Wait) return;
 
 		if (State == EEnemyState::Chase)
 		{
 			if (DistanceToPlayer < CombatActionRadius)
 			{
-				State = EEnemyState::Wait;
-				GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::OnAttackTimerFinished, 2.f);
+				if(AttackIntervalCurrent > AttackInterval)
+				{
+					AttackIntervalCurrent = 0.f;
+					Attack();
+				}
+			}
+			else if (DistanceToPlayer >= CombatApproachRadius)
+			{
+				State = EEnemyState::Idle;
 			}
 			else
 			{
 				PatrolPosition = CombatTarget->GetActorLocation();
 				ApproachLocation(PatrolPosition);
 			}
+			return;
 		}
-		else if (State == EEnemyState::Idle && PatrolTargets.Num() > 0)
+
+		if (State == EEnemyState::Idle && PatrolTargets.Num() > 0)
 		{
 			State = EEnemyState::Patrol;
 			PatrolTarget = NextPatrolTarget();
 			PatrolPosition = PatrolTarget->GetActorLocation();
 			ApproachLocation(PatrolPosition);
+			return;
 		}
-		else if (State == EEnemyState::Patrol && FVector::Dist(GetActorLocation(), PatrolPosition) < PatrolApproachRadius)
+
+		if (State == EEnemyState::Patrol && FVector::Dist(GetActorLocation(), PatrolPosition) < PatrolApproachRadius)
 		{
 			State = EEnemyState::Wait;
 			GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::OnPatrolTimerFinished, 3.f);
@@ -112,12 +119,10 @@ void AEnemy::OnPatrolTimerFinished()
 	State = EEnemyState::Idle;
 }
 
-void AEnemy::OnAttackTimerFinished()
+void AEnemy::Attack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Enemy is attacking!"));
-	GetWorldTimerManager().ClearTimer(AttackTimer);
-	// Do attack logic here
-	State = EEnemyState::Idle;
+	State = EEnemyState::Wait;
+	PlayAnimationMontage(AttackMontage, FEnemyAttackMontageTitles::LightAttack);
 }
 
 void AEnemy::SetShowHealthBar()
@@ -158,11 +163,11 @@ void AEnemy::ApproachLocation(const FVector ApproachLocation) const
 		EnemyController->MoveTo(MoveRequest, &NavPath);
 
 		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
-		for (auto& Point : PathPoints)
-		{
-			const FVector& Location = Point.Location;
-			DrawDebugSphere(GetWorld(), Location, 50.f, 12, FColor::Orange, false, 10);
-		}
+		// for (auto& Point : PathPoints)
+		// {
+		// 	const FVector& Location = Point.Location;
+		// 	DrawDebugSphere(GetWorld(), Location, 50.f, 12, FColor::Orange, false, 10);
+		// }
 	}
 }
 
@@ -241,5 +246,5 @@ void AEnemy::OnPawnSeen(APawn* Pawn)
 
 void AEnemy::OnApproachCompleted(FAIRequestID ID, const FPathFollowingResult& Result) const
 {
-	UE_LOG(LogTemp, Warning, TEXT("Approaching completed"));
+	// UE_LOG(LogTemp, Warning, TEXT("Approaching completed"));
 }

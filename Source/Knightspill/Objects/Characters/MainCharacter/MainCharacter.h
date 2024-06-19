@@ -19,7 +19,7 @@ struct FInputActionValue;
 class UInputMappingContext;
 class UAnimMontage;
 
-struct ECharacterSockets
+struct FCharacterSockets
 {
 	inline static FName RHandSocket = "RHandSocket";
 };

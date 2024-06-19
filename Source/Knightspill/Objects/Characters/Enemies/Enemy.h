@@ -33,6 +33,11 @@ enum class EEnemyState : uint8
 	Attack
 };
 
+struct FEnemyAttackMontageTitles
+{
+	inline static FName LightAttack = "LightAttack";
+};
+
 UCLASS()
 class KNIGHTSPILL_API AEnemy : public ABaseCharacter, public IHittable
 {
@@ -57,12 +62,14 @@ private:
 	float TickIntervalCurrent;
 	UPROPERTY(EditAnywhere)
 	float ShowHealthBarRadius = 1000.f;
+	UPROPERTY(EditAnywhere)
+	float AttackInterval = 3.f;
+	UPROPERTY()
+	float AttackIntervalCurrent;
 
-	//** TIMERS */
+	//** TIMERS AND RELATED */
 	FTimerHandle PatrolTimer;
 	void OnPatrolTimerFinished();
-	FTimerHandle AttackTimer;
-	void OnAttackTimerFinished();
 
 	//** TARGETS */
 	UPROPERTY()
@@ -75,7 +82,7 @@ private:
 	
 	AActor* CombatTarget;
 	UPROPERTY(EditAnywhere, Category="! Targets")
-	float CombatApproachRadius = 400.f;
+	float CombatApproachRadius = 500.f;
 	UPROPERTY(EditAnywhere, Category="! Targets")
 	float CombatActionRadius = 150.f;
 	UPROPERTY()
@@ -86,6 +93,8 @@ private:
 	UAnimMontage* HitReactionMontage;
 	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
 	UAnimMontage* DeathMontage;
+	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
+	UAnimMontage* AttackMontage;
 
 	//** AI */
 	UPROPERTY(BlueprintReadOnly, Category="! Enemy AI", meta=(AllowPrivateAccess="true"))
@@ -107,6 +116,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApproachLocation(const FVector ApproachLocation) const;
 	void OnApproachCompleted(FAIRequestID ID, const FPathFollowingResult& Result) const;
+	UFUNCTION(BlueprintCallable)
+	void SetIdleState() { State = EEnemyState::Idle; }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -116,4 +127,5 @@ protected:
 	AActor* NextPatrolTarget();
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
+	void Attack();
 };
