@@ -14,6 +14,7 @@
 #include "Animation/AnimMontage.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Knightspill/Objects/Characters/CharacterAttributesComponent.h"
 
 
 AMainCharacter::AMainCharacter()
@@ -108,6 +109,40 @@ void AMainCharacter::AttackLight()
 {
 	State = ECharacterActionState::Attacking;
 	PlayAnimationMontage(AttackMontage);
+}
+
+void AMainCharacter::Die()
+{
+	Super::Die();
+	PlayAnimationMontage(DeathMontage);
+}
+
+void AMainCharacter::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal)
+{
+	if (!IsAlive()) return;
+	
+	const FVector Forward = GetActorForwardVector();
+	const FVector ToHitPos = (DamagePosition - GetActorLocation()).GetSafeNormal();
+	const FVector FlattenHitPos(ToHitPos.X, ToHitPos.Y, Forward.Z);
+	const double CosTheta = FVector::DotProduct(Forward, FlattenHitPos);
+	const double Theta = FMath::RadiansToDegrees(FMath::Acos(CosTheta));
+
+	if (Theta > -45.f && Theta < 45.f)
+	{
+		PlayAnimationMontage(HitReactionMontage, FName("HitReactFront"));
+	}
+	else if (Theta <= -45.f && Theta >= -135.f)
+	{
+		PlayAnimationMontage(HitReactionMontage, FName("HitReactLeft"));
+	}
+	else if (Theta >= 45.f && Theta <= -135.f)
+	{
+		PlayAnimationMontage(HitReactionMontage, FName("HitReactRight"));
+	}
+	else
+	{
+		PlayAnimationMontage(HitReactionMontage, FName("HitReactBack"));
+	}
 }
 
 void AMainCharacter::CollectItem(AItem* Item)

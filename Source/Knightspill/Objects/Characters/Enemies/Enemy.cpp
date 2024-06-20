@@ -2,15 +2,13 @@
 
 
 #include "Enemy.h"
-
 #include "Components/CapsuleComponent.h"
+#include "Perception/PawnSensingComponent.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "Knightspill/Objects/Characters/CharacterAttributesComponent.h"
 #include "Knightspill/UI/Floating/Enemy/CharacterHealthBarComponent.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
-#include "Navigation/PathFollowingComponent.h"
-#include "NavMesh/NavMeshPath.h"
-#include "Perception/PawnSensingComponent.h"
 
 
 AEnemy::AEnemy()
@@ -46,6 +44,7 @@ void AEnemy::BeginPlay()
 	HealthBarComponent->SetVisibility(false);
 
 	CombatTarget = Player;
+	ResetState();
 }
 
 void AEnemy::Tick(float DeltaTime)
@@ -99,8 +98,9 @@ void AEnemy::ResetState()
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	const float Damaged = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	HealthBarComponent->SetHealthPercent(CharacterAttributes->GetHealthPercent());
-	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	return Damaged;
 }
 
 void AEnemy::OnApproachCompleted(FAIRequestID ID, const FPathFollowingResult& Result) const

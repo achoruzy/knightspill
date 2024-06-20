@@ -20,3 +20,8 @@ enum class ECharacterActionState : uint8
 	Jumping,
 	Animating
 };
+
+struct FCharacterSockets
+{
+	inline static FName RHandSocket = "RHandSocket";
+};

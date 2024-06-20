@@ -51,11 +51,13 @@ void ADefaultCharacter::Die()
 
 void ADefaultCharacter::StartHit()
 {
+	if (!WeaponEquipped) return;
 	WeaponEquipped->SetActive(true);
 }
 
 void ADefaultCharacter::StopHit()
 {
+	if (!WeaponEquipped) return;
 	WeaponEquipped->SetActive(false);
 	if (AWeapon* Weapon = Cast<AWeapon>(WeaponEquipped))
 	{
@@ -71,4 +73,5 @@ bool ADefaultCharacter::IsAlive() const
 void ADefaultCharacter::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition,
                                               const FVector& DamageNormal)
 {
+	
 }

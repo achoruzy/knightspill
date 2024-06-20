@@ -18,11 +18,6 @@ struct FInputActionValue;
 class UInputMappingContext;
 class UAnimMontage;
 
-struct FCharacterSockets
-{
-	inline static FName RHandSocket = "RHandSocket";
-};
-
 UCLASS()
 class KNIGHTSPILL_API AMainCharacter : public ADefaultCharacter
 {
@@ -69,11 +64,16 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE ECharacterWeaponState GetWeaponState() const { return WeaponState; }
+	/** DefaultCharacter */
 	virtual void ResetState() override { State = ECharacterActionState::Unoccupied; }
 	
 protected:
 	virtual void BeginPlay() override;
 	void AttackLight();
+	/** DefaultCharacter */
+	virtual void Die() override;
+	/** IHittable */
+	virtual void GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal) override;
 
 private:
 	void TraceLine();
@@ -88,7 +88,6 @@ private:
 	void OnLook(const FInputActionValue& Value);
 	void OnJump(const FInputActionValue& Value);
 	void OnInteract(const FInputActionValue& Value);
-	/** Anim callbacks */
 	void OnWeaponEquip(const FInputActionValue& Value);
 	void OnAttackLight(const FInputActionValue& Value);
 };

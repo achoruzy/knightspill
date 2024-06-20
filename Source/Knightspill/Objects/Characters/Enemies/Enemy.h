@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EnemyEnums.h"
-#include "Knightspill/Objects/Characters/CharacterAttributesComponent.h"
 #include "Knightspill/Objects/Characters/DefaultCharacter.h"
+#include "EnemyEnums.h"
 #include "Enemy.generated.h"
 
 struct FPathFollowingResult;
