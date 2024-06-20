@@ -30,7 +30,7 @@ AEnemy::AEnemy()
 	HealthBarComponent = CreateDefaultSubobject<UCharacterHealthBarComponent>(TEXT("HealthBarComponent"));
 	HealthBarComponent->SetupAttachment(RootComponent);
 
-	LivingStatus = EEnemyLivingStatus::Lives;
+	LifeStatus = EEnemyLivingStatus::Lives;
 }
 
 void AEnemy::BeginPlay()
@@ -45,110 +45,22 @@ void AEnemy::BeginPlay()
 	HealthBarComponent->SetHealthPercent(1.f);
 	HealthBarComponent->SetVisibility(false);
 
-	DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
-
 	CombatTarget = Player;
 }
 
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (LivingStatus != EEnemyLivingStatus::Lives) return;
+	if (LifeStatus != EEnemyLivingStatus::Lives) return;
 	TickIntervalCurrent += DeltaTime;
 	AttackIntervalCurrent += DeltaTime;
 
 	if (TickIntervalCurrent > TickInterval)
 	{
 		TickIntervalCurrent = 0.f;
-		DistanceToPlayer = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
-		SetShowHealthBar();
+		ToggleHealthBar(IsInShowHealthBarRadius());
 
-		if (DistanceToPlayer < CombatApproachRadius)
-		{
-			State = EEnemyState::Chase;
-		}
-		if (State == EEnemyState::Wait) return;
-
-		if (State == EEnemyState::Chase)
-		{
-			if (DistanceToPlayer < CombatActionRadius)
-			{
-				if(AttackIntervalCurrent > AttackInterval)
-				{
-					AttackIntervalCurrent = 0.f;
-					Attack();
-				}
-			}
-			else if (DistanceToPlayer >= CombatApproachRadius)
-			{
-				State = EEnemyState::Idle;
-			}
-			else
-			{
-				PatrolPosition = CombatTarget->GetActorLocation();
-				ApproachLocation(PatrolPosition);
-			}
-			return;
-		}
-
-		if (State == EEnemyState::Idle && PatrolTargets.Num() > 0)
-		{
-			State = EEnemyState::Patrol;
-			PatrolTarget = NextPatrolTarget();
-			PatrolPosition = PatrolTarget->GetActorLocation();
-			ApproachLocation(PatrolPosition);
-			return;
-		}
-
-		if (State == EEnemyState::Patrol && FVector::Dist(GetActorLocation(), PatrolPosition) < PatrolApproachRadius)
-		{
-			State = EEnemyState::Wait;
-			GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::OnPatrolTimerFinished, 3.f);
-		}
-	}
-}
-
-void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
-void AEnemy::OnPatrolTimerFinished()
-{
-	GetWorldTimerManager().ClearTimer(PatrolTimer);
-	State = EEnemyState::Idle;
-}
-
-void AEnemy::Attack()
-{
-	State = EEnemyState::Wait;
-	PlayAnimationMontage(AttackMontage, FEnemyAttackMontageTitles::LightAttack);
-}
-
-void AEnemy::SetShowHealthBar()
-{
-	if (DistanceToPlayer < ShowHealthBarRadius) HealthBarComponent->SetVisibility(true);
-	else HealthBarComponent->SetVisibility(false);
-}
-
-float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
-{
-	CharacterAttributes->ReceiveDamage(DamageAmount);
-	HealthBarComponent->SetHealthPercent(CharacterAttributes->GetHealthPercent());
-	
-	if (!CharacterAttributes->IsAlive() && LivingStatus == EEnemyLivingStatus::Lives)
-	{
-		Die();
-	}
-	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-}
-
-void AEnemy::ApproachActor(const AActor* ApproachTarget) const
-{
-	if (ApproachTarget)
-	{
-		ApproachLocation(ApproachTarget->GetActorLocation());
+		DecideBehaviour();
 	}
 }
 
@@ -162,7 +74,8 @@ void AEnemy::ApproachLocation(const FVector ApproachLocation) const
 		FNavPathSharedPtr NavPath;
 		EnemyController->MoveTo(MoveRequest, &NavPath);
 
-		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
+		/** DEBUG */
+		// TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
 		// for (auto& Point : PathPoints)
 		// {
 		// 	const FVector& Location = Point.Location;
@@ -171,10 +84,188 @@ void AEnemy::ApproachLocation(const FVector ApproachLocation) const
 	}
 }
 
+void AEnemy::ApproachActor(const AActor* ApproachTarget) const
+{
+	if (ApproachTarget)
+	{
+		ApproachLocation(ApproachTarget->GetActorLocation());
+	}
+}
+
+void AEnemy::ResetState()
+{
+	State = EEnemyState::Idle;
+}
+
+float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	HealthBarComponent->SetHealthPercent(CharacterAttributes->GetHealthPercent());
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void AEnemy::OnApproachCompleted(FAIRequestID ID, const FPathFollowingResult& Result) const
+{
+	// UE_LOG(LogTemp, Warning, TEXT("Approaching completed"));
+}
+
+void AEnemy::Attack()
+{
+	State = EEnemyState::Wait;
+	PlayAnimationMontage(AttackMontage, FEnemyAttackMontageTitles::LightAttack);
+}
+
+void AEnemy::DecideBehaviour()
+{
+	const double DistToPlayer = DistanceToPlayer();
+	if (IsInCombatRange(DistToPlayer) && !IsInCombat())
+	{
+		GetIntoCombat();
+	}
+	if (IsBusy()) return;
+
+	if (IsInCombat())
+	{
+		if (IsInAttackRange(DistToPlayer) && CanAttack())
+		{
+			AttackIntervalCurrent = 0.f;
+			Attack();
+			return;
+		}
+		
+		if (IsInCombatRange(DistToPlayer))
+		{
+			ApproachCombatTarget();
+		}
+		else
+		{
+			ResetState();
+		}
+		return;
+	}
+
+	if (IsReadyToApproachPatrolTarget())
+	{
+		ApproachNextPatrolTarget();
+		return;
+	}
+
+	if (HasJustApproachedPatrolTarget())
+	{
+		WaitAtPatrolTarget();
+	}
+}
+
+void AEnemy::ToggleHealthBar(const bool Visible) const
+{
+	HealthBarComponent->SetVisibility(Visible);
+}
+
+void AEnemy::ToggleSensing(const bool DoSense) const
+{
+	SensingComponent->SetActive(DoSense);
+}
+
+bool AEnemy::IsInCombatRange(const double DistanceToTarget) const
+{
+	return DistanceToTarget < CombatApproachRadius;
+}
+
+void AEnemy::GetIntoCombat()
+{
+	GetWorldTimerManager().ClearTimer(PatrolTimer);
+	State = EEnemyState::Chase;
+}
+
+bool AEnemy::IsInCombat() const
+{
+	return State == EEnemyState::Chase;
+}
+
+bool AEnemy::IsInAttackRange(const double DistanceToTarget) const
+{
+	return DistanceToTarget < CombatActionRadius;
+}
+
+bool AEnemy::CanAttack() const
+{
+	return AttackIntervalCurrent > AttackInterval;
+}
+
+bool AEnemy::ShouldLeaveCombat(const double DistanceToTarget) const
+{
+	return DistanceToTarget >= CombatApproachRadius;
+}
+
+void AEnemy::ApproachCombatTarget()
+{
+	TargetPosition = CombatTarget->GetActorLocation();
+	ApproachLocation(TargetPosition);
+}
+
+bool AEnemy::IsBusy() const
+{
+	return State == EEnemyState::Wait;
+}
+
+bool AEnemy::IsReadyToApproachPatrolTarget() const
+{
+	return State == EEnemyState::Idle && PatrolTargets.Num() > 0;
+}
+
+void AEnemy::ApproachNextPatrolTarget()
+{
+	State = EEnemyState::Patrol;
+	PatrolTarget = NextPatrolTarget();
+	TargetPosition = PatrolTarget->GetActorLocation();
+	ApproachLocation(TargetPosition);
+}
+
+bool AEnemy::HasJustApproachedPatrolTarget() const
+{
+	return State == EEnemyState::Patrol && FVector::Dist(GetActorLocation(), TargetPosition) < PatrolApproachRadius;
+}
+
+void AEnemy::WaitAtPatrolTarget()
+{
+	State = EEnemyState::Wait;
+	GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::OnPatrolTimerFinished, 3.f);
+}
+
+AActor* AEnemy::NextPatrolTarget()
+{
+	if (PatrolTargets.Num() > 0)
+	{
+		PatrolTargetID++;
+		if (PatrolTargetID == PatrolTargets.Num()) PatrolTargetID = 0;
+		return PatrolTargets[PatrolTargetID];
+	}
+	return nullptr;
+}
+
+void AEnemy::Die()
+{
+	Super::Die();
+	
+	switch (FMath::RandRange(0, 1))
+	{
+	case 0:
+		LifeStatus = EEnemyLivingStatus::DiedForward;
+		PlayAnimationMontage(DeathMontage, TEXT("DieForward"));
+		break;
+	case 1:
+		LifeStatus = EEnemyLivingStatus::DiedBack;
+		PlayAnimationMontage(DeathMontage, TEXT("DieBack"));
+		break;
+	default:
+		break;
+	}
+	ToggleHealthBar(false);
+	ToggleSensing(false);
+}
 
 void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal)
 {
-	if (!CharacterAttributes->IsAlive()) return;
+	if (!IsAlive()) return;
 	
 	const FVector Forward = GetActorForwardVector();
 	const FVector ToHitPos = (DamagePosition - GetActorLocation()).GetSafeNormal();
@@ -182,8 +273,6 @@ void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamageP
 	const double CosTheta = FVector::DotProduct(Forward, FlattenHitPos);
 	const double Theta = FMath::RadiansToDegrees(FMath::Acos(CosTheta));
 
-	const FVector Sign = FVector::CrossProduct(Forward, FlattenHitPos);
-	
 	if (Theta > -45.f && Theta < 45.f)
 	{
 		PlayAnimationMontage(HitReactionMontage, FName("HitReactFront"));
@@ -202,38 +291,14 @@ void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamageP
 	}
 }
 
-void AEnemy::Die()
+double AEnemy::DistanceToPlayer() const
 {
-	switch (int Choice = FMath::RandRange(0, 1))
-	{
-	case 0:
-		LivingStatus = EEnemyLivingStatus::DiedForward;
-		PlayAnimationMontage(DeathMontage, TEXT("DieForward"));
-		break;
-	case 1:
-		LivingStatus = EEnemyLivingStatus::DiedBack;
-		PlayAnimationMontage(DeathMontage, TEXT("DieBack"));
-		break;
-	default:
-		break;
-	}
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	HealthBarComponent->SetVisibility(false);
-	SensingComponent->SetActive(false);
-	GetMesh()->SetCollisionResponseToAllChannels(ECR_Ignore);
-	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	GetMesh()->SetGenerateOverlapEvents(false);
+	return FVector::Dist(GetActorLocation(), Player->GetActorLocation());
 }
 
-AActor* AEnemy::NextPatrolTarget()
+bool AEnemy::IsInShowHealthBarRadius() const
 {
-	if (PatrolTargets.Num() > 0)
-	{
-		PatrolTargetID++;
-		if (PatrolTargetID == PatrolTargets.Num()) PatrolTargetID = 0;
-		return PatrolTargets[PatrolTargetID];
-	}
-	return nullptr;
+	return DistanceToPlayer() < ShowHealthBarRadius;
 }
 
 void AEnemy::OnPawnSeen(APawn* Pawn)
@@ -244,7 +309,8 @@ void AEnemy::OnPawnSeen(APawn* Pawn)
 	}
 }
 
-void AEnemy::OnApproachCompleted(FAIRequestID ID, const FPathFollowingResult& Result) const
+void AEnemy::OnPatrolTimerFinished()
 {
-	// UE_LOG(LogTemp, Warning, TEXT("Approaching completed"));
+	GetWorldTimerManager().ClearTimer(PatrolTimer);
+	State = EEnemyState::Idle;
 }

@@ -104,6 +104,12 @@ void AMainCharacter::AttachWeapon(AWeapon* Weapon)
 	}
 }
 
+void AMainCharacter::AttackLight()
+{
+	State = ECharacterActionState::Attacking;
+	PlayAnimationMontage(AttackMontage);
+}
+
 void AMainCharacter::CollectItem(AItem* Item)
 {
 	CollectedItems.Add(Item);
@@ -233,7 +239,6 @@ void AMainCharacter::OnAttackLight(const FInputActionValue& Value)
 {
 	if (CanAttack())
 	{
-		State = ECharacterActionState::Attacking;
-		PlayAnimationMontage(AttackMontage);
+		AttackLight();
 	}
 }

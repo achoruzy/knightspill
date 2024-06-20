@@ -73,6 +73,7 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+	void AttackLight();
 
 private:
 	void TraceLine();
