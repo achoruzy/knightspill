@@ -94,7 +94,6 @@ protected:
 	bool IsInCombat() const;
 	bool IsInAttackRange(double DistanceToTarget) const;
 	bool CanAttack() const;
-	bool ShouldLeaveCombat(double DistanceToTarget) const;
 	void ApproachCombatTarget();
 	bool IsBusy() const;
 	bool IsReadyToApproachPatrolTarget() const;

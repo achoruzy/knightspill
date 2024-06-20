@@ -191,11 +191,6 @@ bool AEnemy::CanAttack() const
 	return AttackIntervalCurrent > AttackInterval;
 }
 
-bool AEnemy::ShouldLeaveCombat(const double DistanceToTarget) const
-{
-	return DistanceToTarget >= CombatApproachRadius;
-}
-
 void AEnemy::ApproachCombatTarget()
 {
 	TargetPosition = CombatTarget->GetActorLocation();
