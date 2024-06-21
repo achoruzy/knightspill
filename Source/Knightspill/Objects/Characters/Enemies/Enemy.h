@@ -51,7 +51,7 @@ private:
 	UPROPERTY(EditAnywhere, Category="! Targets")
 	float PatrolApproachRadius = 200.f;
 	UPROPERTY()
-	AActor* CombatTarget;
+	ADefaultCharacter* CombatTarget;
 	UPROPERTY(EditAnywhere, Category="! Targets")
 	float CombatApproachRadius = 500.f;
 	UPROPERTY(EditAnywhere, Category="! Targets")
@@ -104,12 +104,13 @@ protected:
 	virtual void Die() override;
 	/** IHittable */
 	virtual void GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal) override;
+	/** CALLBACKS */
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPawnSeen(APawn* Pawn);
 
 private:
 	double DistanceToPlayer() const;
 	bool IsInShowHealthBarRadius() const;
 	/** CALLBACKS */
-	UFUNCTION()
-	void OnPawnSeen(APawn* Pawn);
 	void OnPatrolTimerFinished();
 };

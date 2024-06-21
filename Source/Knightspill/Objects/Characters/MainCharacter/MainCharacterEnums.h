@@ -15,6 +15,7 @@ enum class ECharacterWeaponState : uint8
 UENUM(BlueprintType)
 enum class ECharacterActionState : uint8
 {
+	Dead,
 	Unoccupied,
 	Attacking,
 	Jumping,

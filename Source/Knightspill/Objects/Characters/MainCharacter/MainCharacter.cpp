@@ -116,20 +116,23 @@ void AMainCharacter::AttackLight()
 void AMainCharacter::Die()
 {
 	Super::Die();
+	State = ECharacterActionState::Dead;
 	PlayAnimationMontage(DeathMontage);
+	DisableInput(GetWorld()->GetFirstPlayerController());
 }
 
 void AMainCharacter::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal)
 {
-	UE_LOG(LogTemp, Warning, TEXT("????"));
 	if (!IsAlive()) return;
+
+	State = ECharacterActionState::Animating;
 	
 	const FVector Forward = GetActorForwardVector();
 	const FVector ToHitPos = (DamagePosition - GetActorLocation()).GetSafeNormal();
 	const FVector FlattenHitPos(ToHitPos.X, ToHitPos.Y, Forward.Z);
 	const double CosTheta = FVector::DotProduct(Forward, FlattenHitPos);
 	const double Theta = FMath::RadiansToDegrees(FMath::Acos(CosTheta));
-
+	UE_LOG(LogTemp, Warning, TEXT("%f"), Theta);
 	if (Theta > -45.f && Theta < 45.f)
 	{
 		PlayAnimationMontage(HitReactionMontage, FName("HitReactFront"));

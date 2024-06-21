@@ -49,7 +49,7 @@ void AEnemy::BeginPlay()
 		Weapon->ResetActorsToIgnore();
 	}
 	
-	CombatTarget = Player;
+	CombatTarget = Cast<ADefaultCharacter>(Player);
 	ResetState();
 }
 
@@ -194,7 +194,10 @@ bool AEnemy::IsInAttackRange(const double DistanceToTarget) const
 
 bool AEnemy::CanAttack() const
 {
-	return AttackIntervalCurrent > AttackInterval;
+	return CombatTarget &&
+		CombatTarget->IsAlive() &&
+		CombatTarget->ActorHasTag(FName("EnemyHittable")) &&
+		AttackIntervalCurrent > AttackInterval;
 }
 
 void AEnemy::ApproachCombatTarget()
@@ -300,14 +303,6 @@ double AEnemy::DistanceToPlayer() const
 bool AEnemy::IsInShowHealthBarRadius() const
 {
 	return DistanceToPlayer() < ShowHealthBarRadius;
-}
-
-void AEnemy::OnPawnSeen(APawn* Pawn)
-{
-	// if (Pawn->ActorHasTag(FName("EnemyHittable")))
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("%s seen!"), *Pawn->GetName());
-	// }
 }
 
 void AEnemy::OnPatrolTimerFinished()
