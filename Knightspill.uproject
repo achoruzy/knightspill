@@ -40,6 +40,10 @@
 		{
 			"Name": "ClonerEffector",
 			"Enabled": true
+		},
+		{
+			"Name": "Soundscape",
+			"Enabled": true
 		}
 	]
 }

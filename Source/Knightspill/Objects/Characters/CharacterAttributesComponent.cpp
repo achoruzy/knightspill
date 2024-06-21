@@ -29,6 +29,12 @@ float UCharacterAttributesComponent::GetHealth() const
 	return Health;
 }
 
+void UCharacterAttributesComponent::SetHealth(const float NewHealth)
+{
+	Health = NewHealth;
+	MaxHealth = NewHealth;
+}
+
 float UCharacterAttributesComponent::GetHealthPercent() const
 {
 	return Health / MaxHealth;

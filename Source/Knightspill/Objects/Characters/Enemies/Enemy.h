@@ -28,8 +28,8 @@ private:
 	EEnemyLivingStatus LifeStatus;
 	UPROPERTY()
 	ACharacter* Player;
-	// UPROPERTY()
-	// float DistanceToPlayer;
+	UPROPERTY(EditDefaultsOnly, Category="! Weapon")
+	TSubclassOf<AWeapon> WeaponClass;	
 	UPROPERTY(EditAnywhere, Category="! Enemy Defaults")
 	float TickInterval = 0.3f;
 	UPROPERTY()

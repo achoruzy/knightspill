@@ -31,13 +31,11 @@ AWeapon::AWeapon()
 	HitTraceEnd = CreateDefaultSubobject<USceneComponent>(TEXT("HitTraceEnd"));
 	HitTraceEnd->SetupAttachment(RootComponent);
 
-	ResetActorsToIgnore();
 }
 
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-
 	WeaponBoxCollider->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnBoxOverlap);
 }
 
@@ -73,7 +71,8 @@ void AWeapon::Equip(USceneComponent* Parent, AActor* WeaponOwner, FName SocketNa
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                            int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// if (!IsEquipped) return;
+	if (OtherActor == GetOwner()) return;
+	
 	const FVector Start = HitTraceStart->GetComponentLocation();
 	const FVector End = HitTraceEnd->GetComponentLocation();
 	const FVector HalfSize {2.5f, 2.5f, 2.5f};
@@ -88,7 +87,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		ETraceTypeQuery::TraceTypeQuery1,
 		true,
 		ActorsToIgnore,
-		EDrawDebugTrace::None,
+		EDrawDebugTrace::ForDuration,
 		HitData,
 		true);
 

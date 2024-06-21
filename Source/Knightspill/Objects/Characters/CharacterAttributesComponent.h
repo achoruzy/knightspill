@@ -13,15 +13,16 @@ class KNIGHTSPILL_API UCharacterAttributesComponent : public UActorComponent
 	GENERATED_BODY()
 
 private:
-	UPROPERTY(VisibleAnywhere, Category="Character Attributes")
+	UPROPERTY(EditInstanceOnly, Category="! Character Attributes")
 	float Health;
-	UPROPERTY(EditDefaultsOnly, Category="Character Attributes")
+	UPROPERTY(EditAnywhere, Category="! Character Attributes")
 	float MaxHealth;
 
 public:
 	UCharacterAttributesComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	float GetHealth() const;
+	void SetHealth(const float NewHealth);
 	float GetHealthPercent() const;
 	void ReceiveDamage(const float Damage);
 	bool IsAlive() const;

@@ -23,9 +23,7 @@ AEnemy::AEnemy()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 
 	SensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("SensingComponent"));
-
-	CharacterAttributes = CreateDefaultSubobject<UCharacterAttributesComponent>(TEXT("ArrtibutesComponent"));
-
+	
 	HealthBarComponent = CreateDefaultSubobject<UCharacterHealthBarComponent>(TEXT("HealthBarComponent"));
 	HealthBarComponent->SetupAttachment(RootComponent);
 
@@ -44,7 +42,12 @@ void AEnemy::BeginPlay()
 	HealthBarComponent->SetHealthPercent(1.f);
 	HealthBarComponent->SetVisibility(false);
 
-	if (Weapon) Weapon->Equip(GetMesh(), this, FEnemySockets::RHandSocket);
+	if (WeaponClass) Weapon = Cast<AWeapon>(GetWorld()->SpawnActor(WeaponClass));
+	if (Weapon)
+	{
+		Weapon->Equip(GetMesh(), this, FEnemySockets::WeaponSocket);
+		Weapon->ResetActorsToIgnore();
+	}
 	
 	CombatTarget = Player;
 	ResetState();
@@ -301,10 +304,10 @@ bool AEnemy::IsInShowHealthBarRadius() const
 
 void AEnemy::OnPawnSeen(APawn* Pawn)
 {
-	if (Pawn->ActorHasTag(FName("EnemyHittable")))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("%s seen!"), *Pawn->GetName());
-	}
+	// if (Pawn->ActorHasTag(FName("EnemyHittable")))
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("%s seen!"), *Pawn->GetName());
+	// }
 }
 
 void AEnemy::OnPatrolTimerFinished()

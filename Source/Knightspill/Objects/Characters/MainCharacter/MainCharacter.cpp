@@ -48,6 +48,8 @@ void AMainCharacter::BeginPlay()
 	bCanTrace = false;
 	WeaponState = ECharacterWeaponState::Unequipped;
 	State = ECharacterActionState::Unoccupied;
+
+	CharacterAttributes->SetHealth(200.f);
 }
 
 void AMainCharacter::Tick(float DeltaTime)
@@ -101,6 +103,7 @@ void AMainCharacter::AttachWeapon(AWeapon* NewWeapon)
 		Weapon = NewWeapon;
 		Weapon->Equip(GetMesh(), this, FCharacterSockets::RHandSocket);
 		WeaponState = ECharacterWeaponState::Equipped;
+		Weapon->ResetActorsToIgnore();
 	}
 }
 
@@ -118,6 +121,7 @@ void AMainCharacter::Die()
 
 void AMainCharacter::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal)
 {
+	UE_LOG(LogTemp, Warning, TEXT("????"));
 	if (!IsAlive()) return;
 	
 	const FVector Forward = GetActorForwardVector();

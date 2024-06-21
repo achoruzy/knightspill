@@ -11,7 +11,8 @@
 
 ADefaultCharacter::ADefaultCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+	CharacterAttributes = CreateDefaultSubobject<UCharacterAttributesComponent>(TEXT("ArrtibutesComponent"));
 }
 
 void ADefaultCharacter::BeginPlay()

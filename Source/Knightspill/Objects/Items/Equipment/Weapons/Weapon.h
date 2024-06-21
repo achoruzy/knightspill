@@ -20,8 +20,6 @@ public:
 	UStaticMeshComponent* StaticMesh;
 
 private:
-	// UPROPERTY(VisibleAnywhere)
-	// bool IsEquipped;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess = "true"))
@@ -35,7 +33,7 @@ private:
 	USceneComponent* HitTraceStart;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 	USceneComponent* HitTraceEnd;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TArray<AActor*> ActorsToIgnore;
 	
 public:	

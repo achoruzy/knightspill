@@ -18,7 +18,7 @@ class KNIGHTSPILL_API ADefaultCharacter : public ABaseCharacter, public IHittabl
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	UCharacterAttributesComponent* CharacterAttributes;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(VisibleInstanceOnly, Category="! Weapon")
 	AWeapon* Weapon;
 	//** ANIM MONTAGES */
 	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
