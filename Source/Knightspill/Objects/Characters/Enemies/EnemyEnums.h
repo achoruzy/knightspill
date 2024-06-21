@@ -23,6 +23,11 @@ enum class EEnemyState : uint8
 	Attack
 };
 
+struct FEnemySockets
+{
+	inline static FName RHandSocket = "WeaponSocket";
+};
+
 struct FEnemyAttackMontageTitles
 {
 	inline static FName LightAttack = "LightAttack";

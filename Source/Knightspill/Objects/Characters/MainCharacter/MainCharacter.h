@@ -58,7 +58,7 @@ public:
 	bool IsWeaponEquipped() const;
 	UFUNCTION(BlueprintPure)
 	bool IsBusy() const;
-	void AttachWeapon(AWeapon* Weapon);
+	void AttachWeapon(AWeapon* NewWeapon);
 	void CollectItem(AItem* Item);
 	void SetCanTrace(bool CanTrace);
 

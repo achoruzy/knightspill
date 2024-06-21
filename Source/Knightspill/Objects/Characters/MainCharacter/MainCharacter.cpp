@@ -94,14 +94,13 @@ bool AMainCharacter::IsBusy() const
 	return true;
 }
 
-void AMainCharacter::AttachWeapon(AWeapon* Weapon)
+void AMainCharacter::AttachWeapon(AWeapon* NewWeapon)
 {
-	if (!IsWeaponEquipped())
+	if (!Weapon)
 	{
+		Weapon = NewWeapon;
 		Weapon->Equip(GetMesh(), this, FCharacterSockets::RHandSocket);
-		
 		WeaponState = ECharacterWeaponState::Equipped;
-		WeaponEquipped = Weapon;
 	}
 }
 
@@ -186,20 +185,20 @@ bool AMainCharacter::CanAttack() const
 
 void AMainCharacter::ArmWeapon()
 {
-	if (WeaponEquipped)
+	if (Weapon)
 	{
-		WeaponEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RHandSocket"));
-		WeaponEquipped->SetActive(true);
+		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RHandSocket"));
+		Weapon->SetActive(true);
 		WeaponState = ECharacterWeaponState::Equipped;
 	}
 }
 
 void AMainCharacter::DisarmWeapon()
 {
-	if (WeaponEquipped)
+	if (Weapon)
 	{
-		WeaponEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("SwordSlotBack"));
-		WeaponEquipped->SetActive(false);
+		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("SwordSlotBack"));
+		Weapon->SetActive(false);
 		WeaponState = ECharacterWeaponState::Unequipped;
 	}
 }

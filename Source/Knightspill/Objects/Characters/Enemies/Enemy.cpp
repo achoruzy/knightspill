@@ -9,6 +9,7 @@
 #include "Knightspill/UI/Floating/Enemy/CharacterHealthBarComponent.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Knightspill/Objects/Items/Equipment/Weapons/Weapon.h"
 
 
 AEnemy::AEnemy()
@@ -43,6 +44,8 @@ void AEnemy::BeginPlay()
 	HealthBarComponent->SetHealthPercent(1.f);
 	HealthBarComponent->SetVisibility(false);
 
+	if (Weapon) Weapon->Equip(GetMesh(), this, FEnemySockets::RHandSocket);
+	
 	CombatTarget = Player;
 	ResetState();
 }

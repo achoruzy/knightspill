@@ -31,7 +31,7 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 }
 
 float ADefaultCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+                                    AActor* DamageCauser)
 {
 	CharacterAttributes->ReceiveDamage(DamageAmount);
 	if (!CharacterAttributes->IsAlive())
@@ -51,18 +51,15 @@ void ADefaultCharacter::Die()
 
 void ADefaultCharacter::StartHit()
 {
-	if (!WeaponEquipped) return;
-	WeaponEquipped->SetActive(true);
+	if (!Weapon) return;
+	Weapon->SetActive(true);
 }
 
 void ADefaultCharacter::StopHit()
 {
-	if (!WeaponEquipped) return;
-	WeaponEquipped->SetActive(false);
-	if (AWeapon* Weapon = Cast<AWeapon>(WeaponEquipped))
-	{
-		Weapon->ResetActorsToIgnore();
-	}
+	if (!Weapon) return;
+	Weapon->SetActive(false);
+	Weapon->ResetActorsToIgnore();
 }
 
 bool ADefaultCharacter::IsAlive() const
