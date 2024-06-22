@@ -9,6 +9,7 @@
 #include "Knightspill/Objects/Characters/MainCharacter/MainCharacterEnums.h"
 #include "MainCharacter.generated.h"
 
+class AKnightspillHUD;
 class UCameraComponent;
 class USpringArmComponent;
 class AItem;
@@ -44,6 +45,9 @@ private:
 	ECharacterActionState State;
 	
 	bool bCanTrace;
+
+	UPROPERTY()
+	AKnightspillHUD* HUD;
 	
 	//** ANIM MONTAGES */
 	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
@@ -66,6 +70,7 @@ public:
 	FORCEINLINE ECharacterWeaponState GetWeaponState() const { return WeaponState; }
 	/** DefaultCharacter */
 	virtual void ResetState() override { State = ECharacterActionState::Unoccupied; }
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
 protected:
 	virtual void BeginPlay() override;

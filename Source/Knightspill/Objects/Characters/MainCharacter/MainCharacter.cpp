@@ -14,7 +14,9 @@
 #include "Animation/AnimMontage.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Knightspill/Game/HUD/KnightspillHUD.h"
 #include "Knightspill/Objects/Characters/CharacterAttributesComponent.h"
+#include "Knightspill/UI/HUD/HUDOverlay.h"
 
 
 AMainCharacter::AMainCharacter()
@@ -50,6 +52,13 @@ void AMainCharacter::BeginPlay()
 	State = ECharacterActionState::Unoccupied;
 
 	CharacterAttributes->SetHealth(200.f);
+
+	HUD = Cast<AKnightspillHUD>(Cast<APlayerController>(GetController())->GetHUD());
+
+	HUD->GetOverlay()->SetHealthPercent(1.f);
+	HUD->GetOverlay()->SetStaminaPercent(1.f);
+	HUD->GetOverlay()->SetSoulsValue(0);
+	HUD->GetOverlay()->SetGoldValue(0);
 }
 
 void AMainCharacter::Tick(float DeltaTime)
@@ -132,7 +141,6 @@ void AMainCharacter::GetHit_Implementation(const int DamageValue, const FVector&
 	const FVector FlattenHitPos(ToHitPos.X, ToHitPos.Y, Forward.Z);
 	const double CosTheta = FVector::DotProduct(Forward, FlattenHitPos);
 	const double Theta = FMath::RadiansToDegrees(FMath::Acos(CosTheta));
-	UE_LOG(LogTemp, Warning, TEXT("%f"), Theta);
 	if (Theta > -45.f && Theta < 45.f)
 	{
 		PlayAnimationMontage(HitReactionMontage, FName("HitReactFront"));
@@ -160,6 +168,14 @@ void AMainCharacter::SetCanTrace(const bool CanTrace)
 {
 	bCanTrace = CanTrace;
 	if (!bCanTrace) SeenInteractable = nullptr;
+}
+
+float AMainCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	const float Result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	HUD->GetOverlay()->SetHealthPercent(CharacterAttributes->GetHealthPercent());
+	return Result;
 }
 
 void AMainCharacter::TraceLine()
@@ -261,7 +277,7 @@ void AMainCharacter::OnInteract(const FInputActionValue& Value)
 
 void AMainCharacter::OnWeaponEquip(const FInputActionValue& Value)
 {
-	if (!IsBusy())
+	if (Weapon && !IsBusy())
 	{
 		if (IsWeaponEquipped())
 		{

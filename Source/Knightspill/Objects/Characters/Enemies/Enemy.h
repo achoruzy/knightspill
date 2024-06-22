@@ -50,7 +50,7 @@ private:
 	int PatrolTargetID = -1;
 	UPROPERTY(EditAnywhere, Category="! Targets")
 	float PatrolApproachRadius = 200.f;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category="! Targets", meta=(AllowPrivateAccess="true"))
 	ADefaultCharacter* CombatTarget;
 	UPROPERTY(EditAnywhere, Category="! Targets")
 	float CombatApproachRadius = 500.f;
@@ -90,6 +90,7 @@ protected:
 	void DecideBehaviour();
 	bool IsInCombatRange(double DistanceToTarget) const;
 	void GetIntoCombat();
+	UFUNCTION(BlueprintCallable)
 	bool IsInCombat() const;
 	bool IsInAttackRange(double DistanceToTarget) const;
 	bool CanAttack() const;
