@@ -16,6 +16,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Knightspill/Game/HUD/KnightspillHUD.h"
 #include "Knightspill/Objects/Characters/CharacterAttributesComponent.h"
+#include "Knightspill/Objects/Items/Collectibles/OverlapCollectible.h"
 #include "Knightspill/UI/HUD/HUDOverlay.h"
 
 
@@ -45,13 +46,14 @@ AMainCharacter::AMainCharacter()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Tags.Add(FName("EnemyHittable"));
+	Tags.Add(FName("Knightspill.Actions.EnemyHittable"));
 
 	bCanTrace = false;
 	WeaponState = ECharacterWeaponState::Unequipped;
 	State = ECharacterActionState::Unoccupied;
 
-	CharacterAttributes->SetHealth(200.f);
+	CharacterAttributes->HealHealth(200.f);
+	CharacterAttributes->HealthUpdated.AddLambda([this] (const float NewHealthPercent) { HUD->GetOverlay()->SetHealthPercent(NewHealthPercent); });
 
 	HUD = Cast<AKnightspillHUD>(Cast<APlayerController>(GetController())->GetHUD());
 
@@ -161,7 +163,25 @@ void AMainCharacter::GetHit_Implementation(const int DamageValue, const FVector&
 
 void AMainCharacter::CollectItem(AItem* Item)
 {
-	CollectedItems.Add(Item);
+	if (const AOverlapCollectible* Collectible = Cast<AOverlapCollectible>(Item))
+	{
+		if (Item->Tags.Contains(FName("Knightspill.Collectibles.Health")))
+		{
+			CharacterAttributes->HealHealth(Collectible->GetValue());
+			HUD->GetOverlay()->SetHealthPercent(CharacterAttributes->GetHealthPercent());
+		}
+		if (Item->Tags.Contains(FName("Knightspill.Collectibles.Souls")))
+		{
+			CharacterAttributes->AddSouls(Collectible->GetValue());
+			HUD->GetOverlay()->SetSoulsValue(CharacterAttributes->GetSouls());
+		}
+		if (Item->Tags.Contains(FName("Knightspill.Collectibles.Gold")))
+		{
+			CharacterAttributes->AddGold(Collectible->GetValue());
+			HUD->GetOverlay()->SetGoldValue(CharacterAttributes->GetGold());
+		}
+	}
+	else CollectedItems.Add(Item);
 }
 
 void AMainCharacter::SetCanTrace(const bool CanTrace)

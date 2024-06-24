@@ -101,6 +101,8 @@ protected:
 	bool HasJustApproachedPatrolTarget() const;
 	void WaitAtPatrolTarget();
 	AActor* NextPatrolTarget();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnDeathSpawnCollectibles();
 	/** DefaultCharacter */
 	virtual void Die() override;
 	/** IHittable */

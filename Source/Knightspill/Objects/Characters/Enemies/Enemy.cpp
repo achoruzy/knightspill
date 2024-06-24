@@ -196,7 +196,7 @@ bool AEnemy::CanAttack() const
 {
 	return CombatTarget &&
 		CombatTarget->IsAlive() &&
-		CombatTarget->ActorHasTag(FName("EnemyHittable")) &&
+		CombatTarget->ActorHasTag(FName("Knightspill.Actions.EnemyHittable")) &&
 		AttackIntervalCurrent > AttackInterval;
 }
 
@@ -265,6 +265,8 @@ void AEnemy::Die()
 	}
 	ToggleHealthBar(false);
 	ToggleSensing(false);
+
+	OnDeathSpawnCollectibles();
 }
 
 void AEnemy::GetHit_Implementation(const int DamageValue, const FVector& DamagePosition, const FVector& DamageNormal)
