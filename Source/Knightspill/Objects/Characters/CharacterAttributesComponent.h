@@ -50,10 +50,10 @@ public:
 	void UseStamina(const int UseStamina);
 	float GetStaminaPercent() const;
 	int GetStamina() const;
-	void AddSouls(int SoulsToAdd) { Souls += SoulsToAdd; }
+	void AddSouls(int SoulsToAdd);
 	void UseSouls(int SoulsToUse);
 	int GetSouls() const { return Souls; }
-	void AddGold(int GoldToAdd) { Gold += GoldToAdd; }
+	void AddGold(int GoldToAdd);
 	void UseGold(int GoldToUse);
 	int GetGold() const { return Gold; }
 
@@ -61,14 +61,14 @@ public:
 	DECLARE_MULTICAST_DELEGATE_OneParam(FHealthUpdated, float);
 	FHealthUpdated HealthUpdated;
 
-	// DECLARE_MULTICAST_DELEGATE_OneParam(FStaminaUpdated, float, StaminaPercent);
-	// FHealthUpdated StaminaUpdated;
-	//
-	// DECLARE_MULTICAST_DELEGATE_OneParam(FSoulsUpdated, int, SoulsPercent);
-	// FSoulsUpdated SoulsUpdated;
-	//
-	// DECLARE_MULTICAST_DELEGATE_OneParam(FGoldUpdated, int, GoldPercent);
-	// FGoldUpdated GoldUpdated;
+	DECLARE_MULTICAST_DELEGATE_OneParam(FStaminaUpdated, float);
+	FHealthUpdated StaminaUpdated;
+	
+	DECLARE_MULTICAST_DELEGATE_OneParam(FSoulsUpdated, int);
+	FSoulsUpdated SoulsUpdated;
+	
+	DECLARE_MULTICAST_DELEGATE_OneParam(FGoldUpdated, int);
+	FGoldUpdated GoldUpdated;
 
 protected:
 	virtual void BeginPlay() override;

@@ -53,7 +53,10 @@ void AMainCharacter::BeginPlay()
 	State = ECharacterActionState::Unoccupied;
 
 	CharacterAttributes->HealHealth(200.f);
-	CharacterAttributes->HealthUpdated.AddLambda([this] (const float NewHealthPercent) { HUD->GetOverlay()->SetHealthPercent(NewHealthPercent); });
+	CharacterAttributes->HealthUpdated.AddLambda([this] (const float NewPrc) { HUD->GetOverlay()->SetHealthPercent(NewPrc); });
+	CharacterAttributes->StaminaUpdated.AddLambda([this] (const float NewPrc) { HUD->GetOverlay()->SetStaminaPercent(NewPrc); });
+	CharacterAttributes->SoulsUpdated.AddLambda([this] (const int NewVal) { HUD->GetOverlay()->SetSoulsValue(NewVal); });
+	CharacterAttributes->GoldUpdated.AddLambda([this] (const int NewVal) { HUD->GetOverlay()->SetGoldValue(NewVal); });
 
 	HUD = Cast<AKnightspillHUD>(Cast<APlayerController>(GetController())->GetHUD());
 
@@ -121,6 +124,7 @@ void AMainCharacter::AttachWeapon(AWeapon* NewWeapon)
 void AMainCharacter::AttackLight()
 {
 	State = ECharacterActionState::Attacking;
+	CharacterAttributes->UseStamina(AttackStaminaCost);
 	PlayAnimationMontage(AttackMontage);
 }
 
@@ -172,13 +176,11 @@ void AMainCharacter::CollectItem(AItem* Item)
 		}
 		if (Item->Tags.Contains(FName("Knightspill.Collectibles.Souls")))
 		{
-			CharacterAttributes->AddSouls(Collectible->GetValue());
-			HUD->GetOverlay()->SetSoulsValue(CharacterAttributes->GetSouls());
+			CollectSouls(Collectible->GetValue());
 		}
 		if (Item->Tags.Contains(FName("Knightspill.Collectibles.Gold")))
 		{
-			CharacterAttributes->AddGold(Collectible->GetValue());
-			HUD->GetOverlay()->SetGoldValue(CharacterAttributes->GetGold());
+			CollectGold(Collectible->GetValue());
 		}
 	}
 	else CollectedItems.Add(Item);
@@ -190,8 +192,18 @@ void AMainCharacter::SetCanTrace(const bool CanTrace)
 	if (!bCanTrace) SeenInteractable = nullptr;
 }
 
+void AMainCharacter::CollectSouls(const int Souls) const
+{
+	CharacterAttributes->AddSouls(Souls);
+}
+
+void AMainCharacter::CollectGold(const int Gold) const
+{
+	CharacterAttributes->AddGold(Gold);
+}
+
 float AMainCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+                                 AActor* DamageCauser)
 {
 	const float Result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	HUD->GetOverlay()->SetHealthPercent(CharacterAttributes->GetHealthPercent());
@@ -223,7 +235,7 @@ void AMainCharacter::TraceLine()
 
 bool AMainCharacter::CanAttack() const
 {
-	return !IsBusy() && IsWeaponEquipped();
+	return !IsBusy() && IsWeaponEquipped() && (CharacterAttributes->GetStamina() >= AttackStaminaCost);
 }
 
 void AMainCharacter::ArmWeapon()

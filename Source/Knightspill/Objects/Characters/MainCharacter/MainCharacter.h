@@ -48,6 +48,9 @@ private:
 
 	UPROPERTY()
 	AKnightspillHUD* HUD;
+
+	//** Character stats */ / TODO: Get out to a component
+	float AttackStaminaCost = 25;
 	
 	//** ANIM MONTAGES */
 	UPROPERTY(EditDefaultsOnly, Category="! AnimMontages")
@@ -68,6 +71,10 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE ECharacterWeaponState GetWeaponState() const { return WeaponState; }
+
+	void CollectSouls(int Souls) const;
+	void CollectGold(int Gold) const;
+	
 	/** DefaultCharacter */
 	virtual void ResetState() override { State = ECharacterActionState::Unoccupied; }
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
